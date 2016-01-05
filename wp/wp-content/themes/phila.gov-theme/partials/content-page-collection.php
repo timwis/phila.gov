@@ -5,12 +5,17 @@
  * @package phila-gov
  */
 	$walker_menu = new Content_Collection_Walker();
+  $connected_sections = new WP_Query( array(
+    'connected_type' => 'pages_to_sections',
+    'connected_items' => get_queried_object(),
+    'nopaging' => true,
+  ) );
+
+
+
 	if($post->post_parent) {
 			$children = wp_list_pages(array(
-				'sort_column' => 'menu_order',
-				'title_li' => '',
-				'child_of' => $post->post_parent,
-				'echo' => 0,
+				'include' => $connected_sections->ID,
 				'walker' => $walker_menu
 				));
 			$page_title = get_the_title($post->post_parent);

@@ -5,9 +5,9 @@ jQuery(document).ready(function($){
   //This is here because of permissions weirdness as well as timing problems
   $('#adminmenuwrap .wp-submenu a').each(function(i) {
     if($(this).attr("href") == "edit.php?post_type=page") {
-        $(this).text("Information Page");
+        $(this).text("Collection Page");
       }else if($(this).attr("href") == "post-new.php?post_type=page") {
-        $(this).text("Add Information Page");
+        $(this).text("Add Collection Page");
     }
   });
 
