@@ -30,6 +30,8 @@ class Phila_Gov_Custom_Post_Types{
 
     add_action( 'init', array( $this, 'create_notices_post_type' ) );
 
+    add_action( 'init', array( $this, 'create_section_post_type' ) );
+
     register_activation_hook( __FILE__, array( $this, 'rewrite_flush' ) );
 
   }
@@ -231,6 +233,36 @@ class Phila_Gov_Custom_Post_Types{
         'hierarchical' => false,
         'rewrite' => array(
             'slug' => 'posts',
+            'with_front' => false,
+        ),
+      )
+    );
+  }
+  function create_section_post_type() {
+    register_post_type( 'section',
+      array(
+        'labels' => array(
+            'name' => __( 'Section Page' ),
+            'singular_name' => __( 'Section' ),
+            'add_new'   => __( 'Add Section' ),
+            'all_items'   => __( 'All Section' ),
+            'add_new_item' => __( 'Add New Section' ),
+            'edit_item'   => __( 'Edit Section' ),
+            'view_item'   => __( 'View Section' ),
+            'search_items'   => __( 'Search Sections' ),
+            'not_found'   => __( 'Section Not Found' ),
+            'not_found_in_trash'   => __( 'Section not found in trash' ),
+        ),
+        'taxonomies' => array( 'category' ),
+        'supports' => array( 'editor', 'title', 'revisions' ),
+        'public' => false,
+        'has_archive' => false,
+        'show_ui' => true,
+        'show_in_admin_bar' => true,
+        'menu_icon' => 'dashicons-align-right',
+        'hierarchical' => false,
+        'rewrite' => array(
+            'slug' => 'section',
             'with_front' => false,
         ),
       )

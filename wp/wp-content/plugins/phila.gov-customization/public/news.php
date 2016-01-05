@@ -76,7 +76,6 @@ function phila_news_link( $post_link, $id = 0 ) {
     return home_url( user_trailingslashit( "news/$cat/$post->post_name" ) );
 }
 
-
 /**
 * @since 0.7.0
 *

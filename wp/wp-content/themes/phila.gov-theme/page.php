@@ -9,36 +9,44 @@
  *
  * @package phila-gov
  */
-$children = get_pages("child_of=".$post->ID."&sort_column=menu_order");
-	global $post;
-	$content = $post->post_content;
 
-if ($children && empty( $content )) {
-		$firstchild = $children[0];
-		wp_redirect(get_permalink($firstchild->ID));
-		exit;
-}
-get_header(); ?>
+get_header();
+ // Find connected pages
+ $connected_sections = new WP_Query( array(
+   'connected_type' => 'pages_to_sections',
+   'connected_items' => get_queried_object(),
+   'nopaging' => true,
+ ) );
 
-	<div id="primary" class="content-area row">
-		<main id="main" class="site-main small-24 columns" role="main">
+?>
+  <div id="primary" class="content-area row">
+    <main id="main" class="site-main small-24 columns" role="main">
 
-			<?php while ( have_posts() ) : the_post();
+      <?php  // Display connected pages
+       if ( $connected_sections->have_posts() ) : ?>
+       <ul>
+       <?php while ( $connected_sections->have_posts() ) : $connected_sections->the_post();
 
-				$children = get_pages('child_of=' . $post->ID);
-				$this_content = get_the_content();
-				if ( count( $children ) != 0 && ( $this_content == 0 ))  {
-						//this page is a parent, with content
-						get_template_part( 'partials/content', 'page' );
-				}elseif(($post->id = $post->post_parent)) {
-						get_template_part( 'partials/content', 'page-collection' );
-				}else {
-						get_template_part( 'partials/content', 'page' );
-					}	
+        $this_content = get_the_content();
 
-				endwhile; // end of the loop. ?>
+        if ( count( $connected_sections ) != 0 && ( $this_content == 0 ) )  {
+            //this page is a parent, with content
 
-		</main><!-- #main -->
-	</div><!-- #primary -->
+            get_template_part( 'partials/content', 'page-collection' );
+        }elseif(($post->id = $post->post_parent)) {
+            get_template_part( 'partials/content', 'page-collection' );
+        }else {
+            get_template_part( 'partials/content', 'page' );
+          }
+
+        endwhile;
+
+      endif;
+      wp_reset_postdata();
+
+      ?>
+
+    </main><!-- #main -->
+  </div><!-- #primary -->
 
 <?php get_footer(); ?>

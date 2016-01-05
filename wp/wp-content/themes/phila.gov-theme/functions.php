@@ -587,3 +587,38 @@ function phila_filter_h1( $title ) {
   return $title;
 
 }
+add_action( 'p2p_init', 'my_connection_types' );
+
+function my_connection_types() {
+  p2p_register_connection_type( array(
+    'name' => 'pages_to_sections',
+    'from' => 'page',
+    'to' => 'section',
+    'admin_box' => array(
+      'context' => 'advanced'
+    ),
+    'duplicate_connections' => true,
+    'sortable' => 'from',
+    'from_labels' => array(
+      'singular_name' => __( 'Parent Page(s)', 'phila-gov' ),
+      'search_items' => __( 'Search parent pages', 'phila-gov' ),
+      'not_found' => __( 'No parent page found.', 'phila-gov' ),
+      'create' => __( 'Add Parent Page', 'phila-gov' ),
+     ),
+     'to_labels' => array(
+        'singular_name' => __( 'Section Page(s)', 'my-textdomain' ),
+        'search_items' => __( 'Search sections', 'my-textdomain' ),
+        'not_found' => __( 'No section page found.', 'my-textdomain' ),
+        'create' => __( 'Add section', 'my-textdomain' ),
+      ),
+    )
+  );
+}
+
+add_filter( 'p2p_connectable_args', 'connectable_results_per_page', 10, 3 );
+
+function connectable_results_per_page( $args, $ctype, $post_id ) {
+  $args['p2p:per_page'] = 10;
+
+  return $args;
+}
