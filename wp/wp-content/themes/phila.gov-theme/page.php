@@ -55,8 +55,9 @@ $connected_sections = new WP_Query( array(
             if ( have_posts() ) : ?>
             <?php while ( have_posts() ) : the_post();
 
-              echo '<h2>Overview</h2>';
+              echo '<h2 class="entry-title">Overview</h2>';
               the_content(); ?>
+              
               <hr>
 
               <?php endwhile; ?>
@@ -69,7 +70,6 @@ $connected_sections = new WP_Query( array(
             endwhile; ?>
 
       <?php endif; ?>
-      </div>
     </div>
     <?php wp_reset_postdata(); ?>
 
