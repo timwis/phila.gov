@@ -83,3 +83,13 @@ article .entry-title{
     padding:5px;
   }
 }
+
+//TODO apply this to patterns
+nav .tabs.vertical {
+  max-width: 100%;
+  width:100%;
+}
+
+.tabs-content>.content.active, .tabs-content>.content {
+   padding: 0;
+}
