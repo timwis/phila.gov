@@ -41,11 +41,12 @@ $connected_sections = new WP_Query( array(
 
           <ul class="tabs vertical">
             <li class="tab-title"><a href="<?php get_permalink(); ?>"> Overview </a></li>
-            <?php while ( $connected_sections->have_posts() ) : $connected_sections->the_post();
+            <?php while ( $connected_sections->have_posts() ) : $connected_sections->the_post(); ?>
 
-                get_template_part('partials/content', 'nav' );
+             <?php $post_slug = $post->post_name; ?>
+              <li class="tab-title"><a href="<?php echo '#'. $post_slug ?>" class="tab-link"><?php the_title(); ?></li></a>
 
-             endwhile; ?>
+             <?php endwhile; ?>
           </ul>
          </nav>
          <div class="medium-16 columns">
