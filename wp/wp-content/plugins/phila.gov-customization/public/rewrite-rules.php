@@ -40,6 +40,12 @@ function phila_news_rewrite() {
   add_rewrite_rule("^press-releases/([^/]+)/page/?([0-9]{1,})/?$",'index.php?post_type=press_release&category_name=$matches[1]&paged=$matches[2]','top');
 
   add_rewrite_rule("^browse/([^/]+)/([^/]+)/?$",'index.php?&topics=$matches[1]&topics=$matches[2]','top');
+
+  add_rewrite_rule('(.+)/?$', 'index.php?department_page=$matches[1]');
+
+  add_rewrite_rule('(.+)/(.+)/?$', 'index.php?department_page=$matches[1]department_page=$matches[2]');
+
+  add_rewrite_rule('(.+)/(.+)/(.+)/?$', 'index.php?department_page=$matches[1]department_page=$matches[2]department_page=$matches[3]');
 }
 
 add_action( 'init', 'phila_register_rewrite_tag', 0, 10);
