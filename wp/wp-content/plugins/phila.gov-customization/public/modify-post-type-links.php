@@ -155,6 +155,7 @@ function pre_get_posts_departments( $query ) {
     return;
   }
 
+  //Match on parent name
   $result = $wpdb->get_row(
     $wpdb->prepare(
       'SELECT wpp1.post_type, wpp2.post_name AS parent_post_name FROM ' . $wpdb->posts . ' as wpp1 LEFT JOIN ' . $wpdb->posts . ' as wpp2 ON wpp1.post_parent = wpp2.ID WHERE wpp1.post_name = %s LIMIT 1',
@@ -162,8 +163,8 @@ function pre_get_posts_departments( $query ) {
     )
   );
 
-  //this will give us the URL we need. maybe we should do something like trying to match on the whole url
-  $current_query =  add_query_arg( $_SERVER['QUERY_STRING'], '', home_url( $wp->request ) );
+  //ensure the request sent to WP includes the appropriate parent slug
+  $current_query = add_query_arg( $_SERVER['QUERY_STRING'], '', home_url( $wp->request ) );
 
   $path = parse_url($current_query, PHP_URL_PATH);
 
