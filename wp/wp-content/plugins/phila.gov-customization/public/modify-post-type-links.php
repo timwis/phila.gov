@@ -52,15 +52,18 @@ function phila_add_category_slugs_to_post_links( $post_link, $id = 0, $post_type
         break;
 
       case 'service_post':
+        //is this needed?
         $post_link = get_home_url() . '/' . $post->post_name . '/';
 
         return $post_link;
         break;
 
       case 'department_page':
+        //look for first location of /departments/ instead of stripping all of them
         $post_link = str_replace( '/' . 'departments' . '/', '/', $post_link );
 
         return $post_link;
+
         break;
 
       default:
