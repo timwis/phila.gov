@@ -23,7 +23,9 @@
 
         _e('<strong>Published By:</strong> ');
 
-        phila_echo_current_department_name();
+        $category = get_the_category();
+
+        phila_echo_current_department_name( $category );
 
         ?><br><?php
 
@@ -53,7 +55,7 @@
       <div class="mtm">
         <?php the_content(); ?>
 
-        <!--end press release--->
+        <!--end press release-->
         <div class="center">###</div>
       </div>
     </div><!-- .entry-content -->

@@ -1,9 +1,9 @@
-# WP Offload S3 #
+# WP Offload S3 Lite #
 **Contributors:** bradt, deliciousbrains  
 **Tags:** uploads, amazon, s3, amazon s3, mirror, admin, media, cdn, cloudfront  
-**Requires at least:** 3.7  
-**Tested up to:** 4.4  
-**Stable tag:** 0.9.12  
+**Requires at least:** 4.4  
+**Tested up to:** 4.5.2  
+**Stable tag:** 1.0.4  
 **License:** GPLv3  
 
 Copies files to Amazon S3 as they are uploaded to the Media Library. Optionally configure Amazon CloudFront for faster delivery.
@@ -54,10 +54,10 @@ You can see the minimum requirements [here](https://deliciousbrains.com/wp-offlo
 ## Screenshots ##
 
 ### 1. Choosing/creating a bucket ###
-![Choosing/creating a bucket](https://raw.githubusercontent.com/deliciousbrains/wp-wp-offload-s3/assets/screenshot-1.png)
+![Choosing/creating a bucket](https://raw.githubusercontent.com/deliciousbrains/wp-wp-offload-s3-lite/assets/screenshot-1.png)
 
 ### 2. Settings screen ###
-![Settings screen](https://raw.githubusercontent.com/deliciousbrains/wp-wp-offload-s3/assets/screenshot-2.png)
+![Settings screen](https://raw.githubusercontent.com/deliciousbrains/wp-wp-offload-s3-lite/assets/screenshot-2.png)
 
 
 ## Upgrade Notice ##
@@ -72,6 +72,43 @@ This version requires PHP 5.3.3+ and the Amazon Web Services plugin
 This version requires PHP 5.3.3+ and the Amazon Web Services plugin
 
 ## Changelog ##
+
+### WP Offload S3 Lite 1.0.4 - 2016-05-30 ###
+* New: Now using simpler Force HTTPS setting, removed redundant Always Use HTTP setting.
+* New: `as3cf_cloudfront_path_parts` filter allows changing served CloudFront path (useful when distribution pulls subdirectory).
+* Improvement: Better compatibility with non-standard notices from other plugins and themes.
+* Improvement: Added basic auth and proxy info to diagnostic info.
+* Improvement: Added `allow_url_fopen` status to diagnostic info.
+* Improvement: Added memory usage to diagnostic info.
+* Improvement: Ensure notice text is 800px or less in width.
+* Improvement: Reduced database queries on settings screen.
+* Bug fix: Properly handle _wp_attachment_data metadata when it is a serialized WP_Error.
+
+### WP Offload S3 Lite 1.0.3 - 2016-03-23 ###
+* Bug fix: Don't replace srcset URLs when Rewrite File URLs option disabled
+* Bug fix: Fatal error: Cannot redeclare as3cf_get_secure_attachment_url()
+
+### WP Offload S3 Lite 1.0.2 - 2016-03-08 ###
+* Bug fix: Uninstall would run even if pro plugin installed
+
+### WP Offload S3 Lite 1.0.1 - 2016-03-08 ###
+* Bug fix: Fatal error on plugin activation
+* Bug fix: Unable to activate Pro upgrade
+
+### WP Offload S3 Lite 1.0 - 2016-03-07 ###
+* New: Plugin renamed to "WP Offload S3 Lite"
+* New: Define any and all settings with a constant in wp-config.php
+* New: Documentation links for each setting
+* Improvement: Simplified domain setting UI
+* Improvement: Far future expiration header set by default
+* Improvement: Newly created bucket now immediately appears in the bucket list
+* Improvement: Cleanup user meta on uninstall
+* Improvement: WP Retina 2x integration [removed](https://deliciousbrains.com/wp-offload-s3/doc/copy-hidpi-2x-images-support/)
+* Bug fix: Year/Month folder structure on S3 not created if the 'Organise my uploads into month and year-based folders' WordPress setting is disabled
+* Bug fix: Responsive srcset PHP notices
+* Bug fix: Compatibility addon notices displayed to non-admin users
+* Bug fix: Potential PHP fatal error in MySQL version check in diagnostic log
+* Bug fix: Missing image library notices displaying before plugin is setup
 
 ### WP Offload S3 0.9.12 - 2016-02-03 ###
 * Improvement: Compatibility with WP Offload S3 Assets 1.1

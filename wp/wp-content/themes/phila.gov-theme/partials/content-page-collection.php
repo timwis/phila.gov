@@ -15,6 +15,9 @@
 
   $check_parent_content = $parent_content[0]->post_content;
 
+  $append_before_wysiwyg = rwmb_meta( 'phila_append_before_wysiwyg', $args = array('type' => 'textarea'), $post->ID);
+  $append_after_wysiwyg = rwmb_meta( 'phila_append_after_wysiwyg', $args = array('type' => 'textarea'), $post->ID);
+
   if( $post->post_parent ) {
     //it's a child
     $children = wp_list_pages(array(
@@ -51,45 +54,57 @@
   }
 
   ?>
-  <div class="data-swiftype-index='true'">
-    <div class="row">
-      <header class="entry-header small-24 columns">
-        <?php if ( $parent_title ) : ?>
-          <h1><?php echo $parent_title ?> </h1>
-        <?php else : ?>
-          <h1><?php echo $page_title; ?></h1>
-        <?php endif; ?>
-      </header>
+<article id="post-<?php the_ID(); ?>">
+<div class="row">
+  <header class="entry-header small-24 columns">
+      <?php if ( $parent_title ) : ?>
+        <h1><?php echo $parent_title ?></h1>
+      <?php else : ?>
+        <h1><?php echo $page_title; ?></h1>
+      <?php endif; ?>
+    </header>
+  </div>
+  <div class="row">
+    <div class="medium-6 columns">
+      <aside>
+        <ul class="tabs vertical">
+          <?php if ( $check_parent_content ) : ?>
+            <li class="tabs-title<?php echo ( $current ) ? ' is-active' : ''?>">
+              <a href="<?php echo $parent_link ?>">Overview</a>
+            </li>
+          <?php endif; ?>
+          <?php echo $children; ?>
+        </ul>
+      </aside>
     </div>
-    <article id="post-<?php the_ID(); ?>">
-      <div class="row">
-        <div class="medium-6 columns">
-          <aside>
-            <ul class="tabs vertical">
-              <?php if ( $check_parent_content ) : ?>
-                <li class="tabs-title<?php echo ( $current ) ? ' is-active' : ''?>">
-                  <a href="<?php echo $parent_link ?>">Overview</a>
-                </li>
-              <?php endif; ?>
-              <?php echo $children; ?>
-            </ul>
-          </div>
-          </aside>
-      <div class="medium-18 columns">
-        <div data-swiftype-name="body" data-swiftype-type="text" class="entry-content tabs-content vertical">
-          <div class="tabs-panel is-active">
-            <header class="entry-header">
-              <?php the_title( '<h2 class="entry-title">', '</h2>' ); ?>
-            </header><!-- .entry-header -->
-            <?php if ( $parent_content ) : ?>
-              <?php echo $parent_content ?>
-            <?php else : ?>
-              <?php the_content(); ?>
-            <?php endif; ?>
-          </div>
+    <div class="medium-18 columns">
+      <div data-swiftype-index='true' data-swiftype-name="body" data-swiftype-type="text" class="entry-content tabs-content vertical">
+        <div class="tabs-panel is-active">
+          <header class="entry-header">
+            <?php the_title( '<h2 class="entry-title">', '</h2>' ); ?>
+          </header><!-- .entry-header -->
+
+          <!-- If Custom Markup append_before_wysiwyg is present print it -->
+          <?php if (!$append_before_wysiwyg == ''):?>
+            <?php echo $append_before_wysiwyg; ?>
+          <?php endif; ?>
+
+          <?php if ( $parent_content ) : ?>
+
+            <?php echo $parent_content ?>
+
+          <?php else : ?>
+
+            <?php the_content(); ?>
+
+          <?php endif; ?>
+
+          <!-- If Custom Markup append_after_wysiwyg is present print it -->
+          <?php if (!$append_after_wysiwyg == ''):?>
+            <?php echo $append_after_wysiwyg; ?>
+          <?php endif; ?>
         </div>
-        </div><!-- .entry-content -->
       </div>
     </div>
-  </article><!-- #post-## -->
-</div>
+  </div>
+</article><!-- #post-## -->

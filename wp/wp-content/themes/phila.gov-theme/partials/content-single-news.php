@@ -10,9 +10,8 @@
       <?php the_title( '<h1 class="entry-title contrast">', '</h1>' ); ?>
       <?php $posted_on_values = phila_get_posted_on(); ?>
       <span class="small-text"><?php echo $posted_on_values['time_string'];?>
-        <?php if( !get_the_category() == ''): ?>
-          <?php echo ' by '; ?><a href="<?php echo $posted_on_values['dept_cat_permalink'] ?>" id="content-modified-department" data-slug="<?php echo $posted_on_values['current_cat_slug'] ?>"><?php echo $posted_on_values['dept_title'] ?></a>
-        <?php endif; ?>
+        <?php $category = get_the_category() ?>
+        <?php phila_echo_current_department_name( $category, true ); ?>
       </span>
     </header><!-- .entry-header -->
   </div>
@@ -24,7 +23,7 @@
               $large_image_url = wp_get_attachment_image_src( get_post_thumbnail_id(), 'full' );
               the_post_thumbnail( 'news-thumb' , array( 'class' => 'float-left hide-for-small-only' ) );
       endif;
-      $news_desc = rwmb_meta( 'phila_news_desc', $args = array('type' => 'textrea'));
+      $news_desc = rwmb_meta( 'phila_news_desc', $args = array('type' => 'textarea'));
       if ($post->post_content != ''):
         the_content();
       else :

@@ -24,8 +24,11 @@ class Phila_Gov_Site_Wide_Alert_Rendering {
     function dateTimeFormat($date){
       if ( !$date == '' ) {
         $date_obj = new DateTime("@$date");
-        $formatted_date = $date_obj->format('g:i a \o\n l, F d, Y');
-
+        if( strlen($date_obj->format('F')) > 5 ){
+          $formatted_date = $date_obj->format('g:i a \o\n l, M\. d, Y');
+        } else {
+          $formatted_date = $date_obj->format('g:i a \o\n l, F d, Y');
+        }
         echo str_replace(array('am','pm'),array('a.m.','p.m.'),$formatted_date);
       }
     }
@@ -40,8 +43,8 @@ class Phila_Gov_Site_Wide_Alert_Rendering {
         $alert_active = rwmb_meta( 'phila_active', $args = array('type' => 'radio'));
 
         $alert_type = rwmb_meta( 'phila_type', $args = array('type' => 'select'));
-        $alert_start = rwmb_meta( 'phila_start', $args = array('type' => 'datetime'));
-        $alert_end = rwmb_meta( 'phila_end', $args = array('type' => 'datetime'));
+        $alert_start = rwmb_meta( 'phila_alert_start', $args = array('type' => 'datetime'));
+        $alert_end = rwmb_meta( 'phila_alert_end', $args = array('type' => 'datetime'));
 
         $alert_icon = 'ion-alert-circled';
 
@@ -59,6 +62,7 @@ class Phila_Gov_Site_Wide_Alert_Rendering {
             $alert_icon = 'ion-ios-rainy';
             break;
           case 'Other':
+            $alert_class = rwmb_meta( 'phila_alert-class', $args = array('type' => 'text'));
             $alert_icon = rwmb_meta( 'phila_icon', $args = array('type' => 'text'));
             ($alert_icon == '') ? $alert_icon = 'ion-alert-circled' : $alert_icon;
             break;
@@ -73,7 +77,7 @@ class Phila_Gov_Site_Wide_Alert_Rendering {
 
         if ( ( $alert_start <= $now && $alert_end >= $now ) || ( is_preview() && is_singular( 'site_wide_alert' ) ) ) :
 
-        ?><div id="site-wide-alert">
+        ?><div id="site-wide-alert" <?php if ($alert_class != '') echo 'class="'. $alert_class .'"'; ?> data-swiftype-index='false'>
             <div class="row"><?php
         echo '<div class="large-9 columns">';
         echo '<h2><i class="ionicons ' . $alert_icon . '"></i>' . get_the_title() .'</h2>';

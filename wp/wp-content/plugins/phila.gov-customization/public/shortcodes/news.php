@@ -65,9 +65,9 @@ function recent_news_shortcode($atts) {
     $post_counter = 0;
 
   if ( is_flag ( 'list', $atts ) ) {
-      $output .= '<div class="large-24 columns"><h2 class="alternate">' . $a['name'] . '</h2><div class="news"><ul>';
+      $output .= '<div class="large-24 columns"><h2 class="contrast">' . $a['name'] . '</h2><div class="news"><ul>';
     }else{
-      $output .= '<div class="large-24 columns"><h2 class="alternate">' . $a['name'] . '</h2><div class="row">';
+      $output .= '<div class="large-24 columns"><h2 class="contrast">' . $a['name'] . '</h2><div class="row">';
     }
 
     while( $news_loop->have_posts() ) : $news_loop->the_post();
@@ -80,15 +80,15 @@ function recent_news_shortcode($atts) {
 
     if ( is_flag( 'list', $atts ) ){
 
-      $output .= '<li class="group mbm pbm">';
+      $output .= '<li class="group">';
 
-      $output .= '<a href="' . $link .'">';
+      $output .= '<a href="' . $link .'" class="group">';
 
       $output .=  get_the_post_thumbnail( $post->ID, 'news-thumb', 'class=alignleft small-thumb' );
-      $output .= 	'<span class="entry-date small-text">'. get_the_date() . '</span>';
+      $output .= '<div class="pbm"><span class="entry-date small-text">'. get_the_date() . '</span>';
       $output .=  '<h3>' . get_the_title( $post->ID ) . '</h3>';
       $output .= '<span class="small-text">' . wp_strip_all_tags( $desc ) . '</span>';
-      $output .= '</a>';
+      $output .= '</div></a>';
       $output .= '</li>';
 
     }else{
@@ -120,12 +120,13 @@ function recent_news_shortcode($atts) {
 
     endwhile;
 
-    $output .= '</div><a class="see-all-right float-right" href="/news/'. $category_slug . '">All ' . $a['name'] . '</a></div>';
-
     if ( is_flag( 'list', $atts ) ) {
       $output .= '</ul>';
-      $output .= '</div></div>';
+    //  $output .= '</div>';
     }
+
+    $output .= '</div><a class="see-all-right float-right" href="/news/'. $category_slug . '">All ' . $a['name'] . '</a></div>';
+
 
     }else {
       $output .= __( 'Please enter at least one news story.', 'phila.gov' );

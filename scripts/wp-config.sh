@@ -5,6 +5,13 @@ echo 'Writing wp-config.php'
 # Don't let any existing configs get in the way
 rm -f wp-config.php wp/wp-config.php
 
+if [ "$PHILA_TEST" ]; then
+  read -r -d '' DEBUG <<EOF
+/* Debug true on test instances */
+define('WP_DEBUG', true);
+EOF
+fi
+
 # DOMAIN is INSTANCE_HOSTNAME unless PUBLIC_HOSTNAME is set
 DOMAIN=${PUBLIC_HOSTNAME:-"$INSTANCE_HOSTNAME"}
 
@@ -23,6 +30,8 @@ EOF
 fi
 
 wp core config --dbname=${DB_NAME:-'wp'} --dbuser=${DB_USER:-'root'} ${DB_PASS+"--dbpass=$DB_PASS"} ${DB_HOST+"--dbhost=$DB_HOST"} --skip-check $SKIP_SALTS --extra-php <<PHP
+$DEBUG
+
 $SALTS
 
 /** WP_SITEURL overrides DB to set WP core address */
@@ -34,8 +43,11 @@ define('WP_HOME', 'https://$DOMAIN');
 /** For AWS and S3 usage */
 define('AWS_ACCESS_KEY_ID', '$AWS_ID');
 define('AWS_SECRET_ACCESS_KEY', '$AWS_SECRET');
-define('AS3CF_BUCKET', '$PHILA_MEDIA_BUCKET');
-define('AS3CF_DOMAIN', '$DOMAIN');
+
+define( 'WPOS3_SETTINGS', serialize( array(
+  'bucket' => '$PHILA_MEDIA_BUCKET',
+  'cloudfront' => '$DOMAIN'
+) ) );
 
 /** For Swiftype search */
 define('SWIFTYPE_ENGINE', '$SWIFTYPE_ENGINE');

@@ -18,7 +18,20 @@ class RWMB_Loader
 	public function __construct()
 	{
 		$this->constants();
+
+		/**
+		 * Register autoloader for plugin classes.
+		 * In PHP 5.3, SPL extension cannot be disabled and it's safe to use autoload.
+		 * However, hosting providers can disable it in PHP 5.2. In that case, we provide a fallback for autoload.
+		 * @link http://php.net/manual/en/spl.installation.php
+		 * @link https://github.com/rilwis/meta-box/issues/810
+		 */
 		spl_autoload_register( array( $this, 'autoload' ) );
+		if ( ! class_exists( 'RWMB_Core' ) )
+		{
+			$this->autoload_fallback();
+		}
+
 		$this->init();
 	}
 
@@ -28,7 +41,7 @@ class RWMB_Loader
 	public function constants()
 	{
 		// Script version, used to add version for scripts and styles
-		define( 'RWMB_VER', '4.8.3' );
+		define( 'RWMB_VER', '4.8.7' );
 
 		list( $path, $url ) = self::get_path();
 
@@ -50,31 +63,26 @@ class RWMB_Loader
 	 * @param string $base Base folder path
 	 * @return array Path and URL.
 	 */
-	static public function get_path( $base = '' )
+	public static function get_path( $base = '' )
 	{
 		// Plugin base path
-		$path    = $base ? $base : dirname( dirname( __FILE__ ) );
-		$path    = untrailingslashit( $path );
-		$abspath = untrailingslashit( ABSPATH );
+		$path        = $base ? $base : dirname( dirname( __FILE__ ) );
+		$path        = wp_normalize_path( untrailingslashit( $path ) );
+		$content_dir = wp_normalize_path( untrailingslashit( WP_CONTENT_DIR ) );
 
-		// Check if plugin is a symbolic link (only when it's installed as a standalone plugin).
-		if ( false === strpos( $path, $abspath ) )
+		// Default URL
+		$url = plugins_url( '', $path . '/' . basename( $path ) . '.php' );
+
+		// Included into themes
+		if (
+			0 !== strpos( $path, wp_normalize_path( WP_PLUGIN_DIR ) )
+			&& 0 !== strpos( $path, wp_normalize_path( WPMU_PLUGIN_DIR ) )
+			&& 0 === strpos( $path, $content_dir )
+		)
 		{
-			if ( ! function_exists( 'is_plugin_active' ) )
-			{
-				require_once ABSPATH . 'wp-admin/includes/plugin.php';
-			}
-			$basename = basename( $path );
-			if ( is_plugin_active( "$basename/$basename.php" ) )
-			{
-				$path = trailingslashit( WP_PLUGIN_DIR ) . $basename;
-			}
+			$content_url = untrailingslashit( dirname( dirname( get_stylesheet_directory_uri() ) ) );
+			$url         = str_replace( $content_dir, $content_url, $path );
 		}
-
-		// Get plugin base URL
-		$content_url = untrailingslashit( dirname( dirname( get_stylesheet_directory_uri() ) ) );
-		$content_dir = untrailingslashit( WP_CONTENT_DIR );
-		$url         = str_replace( wp_normalize_path( $content_dir ), $content_url, wp_normalize_path( $path ) );
 
 		$path = trailingslashit( $path );
 		$url  = trailingslashit( $url );
@@ -115,6 +123,91 @@ class RWMB_Loader
 				require $dir . $file;
 				return;
 			}
+		}
+	}
+
+	/**
+	 * Fallback for autoload in PHP 5.2.
+	 */
+	public function autoload_fallback()
+	{
+		$files = array(
+			// Core
+			'core',
+			'helper',
+			'meta-box',
+			'validation',
+
+			// Walkers
+			'walkers/walker',
+			'walkers/select-walker',
+			'walkers/select-tree-walker',
+			'walkers/input-list-walker',
+
+			// Fields
+			'field',
+
+			'fields/multiple-values',
+			'fields/autocomplete',
+			'fields/text-list',
+
+			'fields/choice',
+
+			'fields/select',
+			'fields/select-advanced',
+			'fields/select-tree',
+
+			'fields/input-list',
+			'fields/radio',
+			'fields/checkbox-list',
+
+			'fields/object-choice',
+			'fields/post',
+			'fields/taxonomy',
+			'fields/taxonomy-advanced',
+			'fields/user',
+
+			'fields/input',
+
+			'fields/checkbox',
+			'fields/number',
+			'fields/range',
+
+			'fields/text',
+			'fields/color',
+			'fields/datetime',
+			'fields/date',
+			'fields/time',
+			'fields/email',
+			'fields/fieldset-text',
+			'fields/key-value',
+			'fields/url',
+			'fields/oembed',
+			'fields/password',
+
+			'fields/media',
+			'fields/file-upload',
+			'fields/image-advanced',
+			'fields/image-upload',
+
+			'fields/file-input',
+			'fields/file',
+			'fields/image',
+			'fields/image-select',
+			'fields/thickbox-image',
+
+			'fields/button',
+			'fields/custom-html',
+			'fields/divider',
+			'fields/heading',
+			'fields/map',
+			'fields/slider',
+			'fields/textarea',
+			'fields/wysiwyg',
+		);
+		foreach ( $files as $file )
+		{
+			require RWMB_INC_DIR . "$file.php";
 		}
 	}
 

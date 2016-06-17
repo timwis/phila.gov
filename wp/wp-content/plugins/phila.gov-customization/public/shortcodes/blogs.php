@@ -45,9 +45,9 @@ function latest_posts_shortcode($atts) {
     $post_counter = 0;
 
   if ( is_flag ('list', $atts) ) {
-    $output .= '<div class="large-24 columns"><h2 class="alternate">' . $a['name'] . '</h2><div class="news"><ul>';
+    $output .= '<div class="large-24 columns"><h2 class="contrast">' . $a['name'] . '</h2><div class="news"><ul>';
   }else{
-    $output .= '<div class="large-24 columns"><h2 class="alternate">' . $a['name'] . '</h2><div class="row">';
+    $output .= '<div class="large-24 columns"><h2 class="contrast">' . $a['name'] . '</h2><div class="row">';
   }
 
     while( $blog_loop->have_posts() ) : $blog_loop->the_post();
@@ -92,17 +92,16 @@ function latest_posts_shortcode($atts) {
 
     endwhile;
 
-    $output .= '</div><a class="see-all-right float-right" href="/posts/'. $category_slug . '">All ' . $a['name'] . '</a></div>';
-
     if ( is_flag( 'list', $atts ) ) {
       $output .= '</ul>';
-      $output .= '</div></div>';
     }
+
+    $output .= '</div><a class="see-all-right float-right" href="/posts/'. $category_slug . '">All ' . $a['name'] . '</a></div>';
 
     }else {
       $output .= __( 'Please enter at least one post.', 'phila.gov' );
     }
-    //.news
+
 
   wp_reset_postdata();
   return $output;
