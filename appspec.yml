@@ -1,8 +1,8 @@
 version: 0.0
 os: linux
 files:
-  - source: /
-    destination: /home/ubuntu/app/
+  - source: /wp
+    destination: /home/ubuntu/app/wp
 permissions:
   - object: /home/ubuntu/app/
     owner: ubuntu
