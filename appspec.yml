@@ -7,8 +7,3 @@ permissions:
   - object: /home/ubuntu/app/
     owner: ubuntu
     group: ubuntu
-hooks:
-  BeforeInstall:
-    - location: code_deploy_scripts/predeploy.sh
-  ApplicationStart:
-    - location: code_deploy_scripts/postdeploy.sh
