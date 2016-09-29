@@ -7,3 +7,6 @@ permissions:
   - object: /home/ubuntu/app/
     owner: ubuntu
     group: ubuntu
+hooks:
+  AfterInstall:
+    - location: scripts/postdeploy
