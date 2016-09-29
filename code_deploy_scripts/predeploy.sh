@@ -1,4 +1,4 @@
 #!/bin/bash
 
-service nginx stop
-rm -rf /home/ubuntu/app/*
+/usr/sbin/service nginx stop
+/bin/rm -rf /home/ubuntu/app/*
