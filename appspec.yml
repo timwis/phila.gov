@@ -8,7 +8,7 @@ permissions:
     owner: ubuntu
     group: ubuntu
 hooks:
-  BeforeInstall
+  BeforeInstall:
     - location: code_deploy_scripts/predeploy.sh
-  ApplicationStart
+  ApplicationStart:
     - location: code_deploy_scripts/postdeploy.sh
