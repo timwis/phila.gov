@@ -9,6 +9,8 @@
  * @since       0.8.3
  */
 
+use DeliciousBrains\WP_Offload_S3\Providers\Provider;
+
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -39,6 +41,11 @@ class AS3CF_Plugin_Compatibility {
 	protected $compatibility_addons;
 
 	/**
+	 * @var array
+	 */
+	private $removed_files = array();
+
+	/**
 	 * @param Amazon_S3_And_CloudFront $as3cf
 	 */
 	function __construct( $as3cf ) {
@@ -63,7 +70,10 @@ class AS3CF_Plugin_Compatibility {
 		add_filter( 'wp_calculate_image_srcset', array( $this, 'wp_calculate_image_srcset' ), 10, 5 );
 		add_filter( 'wp_calculate_image_srcset_meta', array( $this, 'wp_calculate_image_srcset_meta' ), 10, 4 );
 
-		if ( $this->as3cf->is_plugin_setup() ) {
+		// Maybe warn about PHP version if in admin screens.
+		add_action( 'admin_init', array( $this, 'maybe_warn_about_php_version' ) );
+
+		if ( $this->as3cf->is_plugin_setup( true ) ) {
 			$this->compatibility_init_if_setup();
 		}
 	}
@@ -93,15 +103,20 @@ class AS3CF_Plugin_Compatibility {
 		add_filter( 'wp_unique_filename', array( $this, 'customizer_crop_unique_filename' ), 10, 3 );
 
 		/*
-		 * Regenerate Thumbnails
+		 * Regenerate Thumbnails (before v3)
 		 * https://wordpress.org/plugins/regenerate-thumbnails/
 		 */
 		add_filter( 'as3cf_get_attached_file', array( $this, 'regenerate_thumbnails_download_file' ), 10, 4 );
 
+		/**
+		 * Regenerate Thumbnails v3+ and other REST-API using plugins that need a local file.
+		 */
+		add_filter( 'rest_dispatch_request', array( $this, 'rest_dispatch_request_copy_back_to_local' ), 10, 4 );
+
 		/*
 		 * WP-CLI Compatibility
 		 */
-		if ( defined( 'WP_CLI' ) && class_exists( 'WP_CLI') ) {
+		if ( defined( 'WP_CLI' ) && class_exists( 'WP_CLI' ) ) {
 			WP_CLI::add_hook( 'before_invoke:media regenerate', array( $this, 'enable_get_attached_file_copy_back_to_local' ) );
 		}
 	}
@@ -138,6 +153,51 @@ class AS3CF_Plugin_Compatibility {
 	 */
 	public function enable_get_attached_file_copy_back_to_local() {
 		add_filter( 'as3cf_get_attached_file_copy_back_to_local', '__return_true' );
+
+		// Monitor any files that are subsequently removed.
+		add_filter( 'as3cf_upload_attachment_local_files_to_remove', array(
+			$this,
+			'monitor_local_files_to_remove',
+		), 10, 3 );
+
+		// Prevent subsequent attempts to copy back after upload and remove.
+		add_filter( 'as3cf_get_attached_file_copy_back_to_local', array(
+			$this,
+			'prevent_copy_back_to_local_after_remove',
+		), 10, 4 );
+	}
+
+	/**
+	 * Keeps track of local files that are removed after upload.
+	 *
+	 * @param array   $files_to_remove
+	 * @param integer $post_id
+	 * @param string  $file_path
+	 *
+	 * @return array
+	 */
+	public function monitor_local_files_to_remove( $files_to_remove, $post_id, $file_path ) {
+		$this->removed_files = array_merge( $this->removed_files, $files_to_remove );
+
+		return $files_to_remove;
+	}
+
+	/**
+	 * Prevent subsequent attempts to copy back after upload and remove.
+	 *
+	 * @param bool    $copy_back_to_local
+	 * @param string  $file
+	 * @param integer $attachment_id
+	 * @param array   $s3_object
+	 *
+	 * @return bool
+	 */
+	public function prevent_copy_back_to_local_after_remove( $copy_back_to_local, $file, $attachment_id, $s3_object ) {
+		if ( $copy_back_to_local && in_array( $file, $this->removed_files ) ) {
+			$copy_back_to_local = false;
+		}
+
+		return $copy_back_to_local;
 	}
 
 	/**
@@ -466,13 +526,16 @@ class AS3CF_Plugin_Compatibility {
 		$length2 = strlen( $key2 );
 
 		global $wpdb;
-		$sql = "
+		$sql = $wpdb->prepare( "
 			SELECT `post_id`
 			FROM `{$wpdb->prefix}postmeta`
 			WHERE `{$wpdb->prefix}postmeta`.`meta_key` = 'amazonS3_info'
-			AND ( `{$wpdb->prefix}postmeta`.`meta_value` LIKE '%s:3:\"key\";s:{$length1}:\"{$key1}\";%'
-			OR `{$wpdb->prefix}postmeta`.`meta_value` LIKE '%s:3:\"key\";s:{$length2}:\"{$key2}\";%' )
-		";
+			AND ( `{$wpdb->prefix}postmeta`.`meta_value` LIKE %s
+			OR `{$wpdb->prefix}postmeta`.`meta_value` LIKE %s )
+		",
+			"%s:3:\"key\";s:{$length1}:\"{$key1}\";%",
+			"%s:3:\"key\";s:{$length2}:\"{$key2}\";%"
+		);
 
 		if ( $id = $wpdb->get_var( $sql ) ) {
 			return $id;
@@ -516,7 +579,7 @@ class AS3CF_Plugin_Compatibility {
 		}
 
 		try {
-			$this->as3cf->get_s3client( $s3_object['region'], true )->getObject( array(
+			$this->as3cf->get_s3client( $s3_object['region'], true )->get_object( array(
 				'Bucket' => $s3_object['bucket'],
 				'Key'    => $s3_object['key'],
 				'SaveAs' => $file,
@@ -535,56 +598,30 @@ class AS3CF_Plugin_Compatibility {
 	 *
 	 * @param string $region
 	 *
-	 * @return mixed
+	 * @return Provider|null
 	 */
 	protected function register_stream_wrapper( $region ) {
-		$stored_region = ( '' === $region ) ? Amazon_S3_And_CloudFront::DEFAULT_REGION : $region;
+		$stored_region = ( '' === $region ) ? $this->as3cf->get_default_region() : $region;
 
-		if ( in_array( $stored_region, self::$stream_wrappers ) ) {
-			return;
+		if ( ! empty( self::$stream_wrappers[ $stored_region ] ) ) {
+			return self::$stream_wrappers[ $stored_region ];
 		}
 
-		$client   = $this->as3cf->get_s3client( $region, true );
-		$protocol = $this->get_stream_wrapper_protocol( $region );
+		$client = $this->as3cf->get_s3client( $region, true );
 
-		// Register the region specific S3 stream wrapper to be used by plugins
-		AS3CF_Stream_Wrapper::register( $client, $protocol );
 
-		self::$stream_wrappers[] = $stored_region;
+		if ( ! empty( $client ) && $client->register_stream_wrapper( $region ) ) {
+			self::$stream_wrappers[ $stored_region ] = $client;
+
+			return $client;
+		}
+
+		return null;
 	}
 
 	/**
-	 * Generate the stream wrapper protocol
-	 *
-	 * @param string $region
-	 *
-	 * @return string
-	 */
-	protected function get_stream_wrapper_protocol( $region ) {
-		$protocol = 's3';
-		$protocol .= str_replace( '-', '', $region );
-
-		return $protocol;
-	}
-
-	/**
-	 * Generate an S3 stream wrapper compatible URL
-	 *
-	 * @param string $bucket
-	 * @param string $key
-	 *
-	 * @return string
-	 */
-	function prepare_stream_wrapper_file( $bucket, $region, $key ) {
-		$protocol = $this->get_stream_wrapper_protocol( $region );
-
-		return $protocol . '://' . $bucket . '/' . $key;
-	}
-
-	/**
-	 * Allow access to the S3 file via the stream wrapper.
-	 * This is useful for compatibility with plugins when attachments are removed from the
-	 * local server after upload.
+	 * Allow access to the remote file via the stream wrapper.
+	 * This is useful for compatibility with plugins when attachments are removed from the local server after upload.
 	 *
 	 * @param string $url
 	 * @param string $file
@@ -599,10 +636,14 @@ class AS3CF_Plugin_Compatibility {
 			return $file;
 		}
 
-		// Make sure the region stream wrapper is registered
-		$this->register_stream_wrapper( $s3_object['region'] );
+		// Make sure the region stream wrapper is registered.
+		$client = $this->register_stream_wrapper( $s3_object['region'] );
 
-		return $this->prepare_stream_wrapper_file( $s3_object['bucket'], $s3_object['region'], $s3_object['key'] );
+		if ( ! empty( $client ) ) {
+			return $client->prepare_stream_wrapper_file( $s3_object['region'], $s3_object['bucket'], $s3_object['key'] );
+		}
+
+		return $url;
 	}
 
 	/**
@@ -617,6 +658,10 @@ class AS3CF_Plugin_Compatibility {
 	public function wp_image_add_srcset_and_sizes( $image, $image_meta, $attachment_id ) {
 		// Ensure the image meta exists.
 		if ( empty( $image_meta['sizes'] ) ) {
+			return $image;
+		}
+
+		if ( ! is_string( $image ) ) {
 			return $image;
 		}
 
@@ -789,7 +834,7 @@ class AS3CF_Plugin_Compatibility {
 	 */
 	protected function find_image_size_from_width( $sizes, $width, $filename ) {
 		foreach ( $sizes as $name => $size ) {
-			if ( $width === $size['width'] && $size['file'] === $filename ) {
+			if ( $width === absint( $size['width'] ) && $size['file'] === $filename ) {
 				return $name;
 			}
 		}
@@ -817,5 +862,77 @@ class AS3CF_Plugin_Compatibility {
 		$filename = $this->as3cf->filter_unique_filename( $filename, $post_id );
 
 		return $filename;
+	}
+
+	/**
+	 * Display an admin message if PHP version is soon to be unsupported by plugin.
+	 *
+	 * NOTE: This is not added to AWS SDK compatibility checks as it is remaining compatible with earlier PHP versions.
+	 * This function should be removed or reworked once PHP 5.5 is required.
+	 */
+	public function maybe_warn_about_php_version() {
+		$key_base = 'php-version-55';
+
+		if ( version_compare( PHP_VERSION, '5.5', '<' ) ) {
+			$message = sprintf(
+				__( '<strong>Warning:</strong> This site is using PHP %1$s, in a future update WP Offload S3 will require PHP %2$s or later. %3$s', 'amazon-s3-and-cloudfront' ),
+				PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION,
+				'5.5',
+				$this->as3cf->more_info_link( '/wp-offload-s3/doc/php-version-requirements/', 'upgrade-php-version' )
+			);
+
+			// Show notice to user if not already dismissed.
+			$args = array(
+				'custom_id'         => $key_base . '-site',
+				'type'              => 'notice-warning',
+				'flash'             => false,
+				'only_show_to_user' => false,
+			);
+
+			if ( ! in_array( $args['custom_id'], $this->as3cf->notices->get_dismissed_notices() ) ) {
+				$this->as3cf->notices->add_notice( $message, $args );
+			} else {
+				// If user has dismissed site-wide notice but we're in settings pages, show notice.
+				$args['custom_id']             = $key_base . '-settings';
+				$args['dismissible']           = false;
+				$args['only_show_in_settings'] = true;
+
+				$this->as3cf->notices->add_notice( $message, $args );
+			}
+		} else {
+			// If PHP version (now) OK, make sure notices not shown.
+			$this->as3cf->notices->remove_notice_by_id( $key_base . '-site' );
+			$this->as3cf->notices->remove_notice_by_id( $key_base . '-settings' );
+		}
+	}
+
+	/**
+	 * Filters the REST dispatch request to determine whether route needs compatibility actions.
+	 *
+	 * @param bool            $dispatch_result Dispatch result, will be used if not empty.
+	 * @param WP_REST_Request $request         Request used to generate the response.
+	 * @param string          $route           Route matched for the request.
+	 * @param array           $handler         Route handler used for the request.
+	 *
+	 * @return bool
+	 */
+	public function rest_dispatch_request_copy_back_to_local( $dispatch_result, $request, $route, $handler ) {
+		$routes = array(
+			'/regenerate-thumbnails/v\d+/regenerate/',
+		);
+
+		$routes = apply_filters( 'as3cf_rest_api_enable_get_attached_file_copy_back_to_local', $routes );
+		$routes = is_array( $routes ) ? $routes : (array) $routes;
+
+		if ( ! empty( $routes ) ) {
+			foreach ( $routes as $match_route ) {
+				if ( preg_match( '@' . $match_route . '@i', $route ) ) {
+					$this->enable_get_attached_file_copy_back_to_local();
+					break;
+				}
+			}
+		}
+
+		return $dispatch_result;
 	}
 }

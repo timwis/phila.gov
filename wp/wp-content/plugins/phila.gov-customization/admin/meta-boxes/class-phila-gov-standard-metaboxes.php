@@ -1,10 +1,11 @@
 <?php
+/* Registers discrete, reusable metaboxes */
 
 if ( class_exists('Phila_Gov_Standard_Metaboxes' ) ){
   $phila_standard_metaboxes_load = new Phila_Gov_Standard_Metaboxes();
 }
 
- class Phila_Gov_Standard_Metaboxes {
+class Phila_Gov_Standard_Metaboxes {
 
   public static function phila_wysiwyg_options_basic( $editor_height = 200 ){
 
@@ -63,19 +64,16 @@ if ( class_exists('Phila_Gov_Standard_Metaboxes' ) ){
           'name' => 'City',
           'id'   => 'phila_std_address_city',
           'type' => 'text',
-          'std' => 'Philadelphia',
         ),
         array(
           'name' => 'State',
           'id'   => 'phila_std_address_state',
           'type' => 'text',
-          'std' => 'PA',
         ),
         array(
           'name' => 'Zip',
           'id'   => 'phila_std_address_zip',
           'type' => 'text',
-          'std' => '19107',
         ),
       ),
     );
@@ -91,6 +89,7 @@ if ( class_exists('Phila_Gov_Standard_Metaboxes' ) ){
       'type'  => 'group',
       'clone' => true,
       'sort_clone'  => true,
+      'add_button' => '+ Add row',
 
       'fields'  => array(
         array(
@@ -98,7 +97,7 @@ if ( class_exists('Phila_Gov_Standard_Metaboxes' ) ){
           'placeholder' => 'Heading',
           'id'  => 'phila_wysiwyg_heading',
           'type'  => 'text',
-          'class' => 'width-95'
+          'class' => 'percent-95'
         ),
         array(
           'id'  => 'phila_unique_wysiwyg_content',
@@ -106,18 +105,36 @@ if ( class_exists('Phila_Gov_Standard_Metaboxes' ) ){
           'options' => Phila_Gov_Standard_Metaboxes::phila_wysiwyg_options_basic_heading()
         ),
         array(
-          'desc'  => 'Include an address?',
+          'name'  => 'Include an address?',
           'id'  => 'phila_address_select',
-          'type'  => 'checkbox',
+          'type'  => 'switch',
+          'on_label'  => 'Yes',
+          'off_label' => 'No'
         ),
         array(
           'id' => 'phila_std_address',
           'type' => 'group',
-          'visible' => array('phila_address_select', true),
+          'hidden' => array('phila_address_select', false),
 
           'fields' => array(
             Phila_Gov_Standard_Metaboxes::phila_metabox_v2_address_fields(),
           ),
+        ),
+        array(
+          'name'  => 'Add stepped content?',
+          'id'  => 'phila_stepped_select',
+          'type'  => 'switch',
+          'on_label'  => 'Yes',
+          'off_label' => 'No'
+        ),
+        array(
+          'id' => 'phila_stepped_content',
+          'type' => 'group',
+          'visible' => array('phila_stepped_select', true),
+
+          'fields'  => array(
+            Phila_Gov_Standard_Metaboxes::phila_metabox_v2_ordered_content(),
+          )
         ),
       )
     );
@@ -127,16 +144,38 @@ if ( class_exists('Phila_Gov_Standard_Metaboxes' ) ){
 
     return array(
       array(
-        'name' => 'Calender ID',
+        'name' => 'Calendar Shortcode ID',
         'id'   => 'phila_full_width_calendar_id',
         'desc'  => 'ID of the calendar',
         'type' => 'number'
       ),
       array(
-        'name' => 'Calendar URL',
-        'id'   => 'phila_full_width_calendar_url',
-        'desc'  => 'URL of the full calendar',
-        'type' => 'url'
+        'name'  => 'Event spotlight',
+        'id'  => 'phila_active_event_spotlight',
+        'desc'  => 'Display an event spotlight?',
+        'type'  => 'switch',
+        'std'=> '0',
+        'on_label'  => 'Yes',
+        'off_label' => 'No',
+      ),
+      array(
+        'name'  => 'Select event spotlight',
+        'id'  => 'phila_event_spotlight',
+        'type'  => 'post',
+        'visible' => array('phila_active_event_spotlight', '=', 1),
+        'post_type' => 'event_spotlight',
+        'field_type'  => 'select_advanced',
+      ),
+      array(
+        'name' => 'Calendar owner',
+        'id'   => 'phila_calendar_owner',
+        'type' => 'taxonomy_advanced',
+        'desc'  => 'Determines what owner filter will be applied when a user clicks "see all events". Default is this item\'s owner.',
+        'query_args' => array(
+          'taxonomy' => 'category',
+          'hide_empty' => false,
+        ),
+        'field_type'  => 'select_advanced'
       ),
     );
   }
@@ -147,13 +186,14 @@ if ( class_exists('Phila_Gov_Standard_Metaboxes' ) ){
     return array(
       'id'  => 'phila_document_page_picker',
       'type'  => 'post',
+      'name'  => 'Select document page',
       'post_type' => 'document',
       'field_type'  => 'select_advanced',
       'desc'  => 'Add document pages. You can narrow your search options by typing in the field above.',
       'query_args'  => array(
         'orderby' => 'title',
         'order' => 'ASC',
-        //TODO: only show document pages that match the current category
+        'post_status' => 'any'
       ),
       'multiple'  => true,
       'placeholder' => ' ',
@@ -164,19 +204,25 @@ if ( class_exists('Phila_Gov_Standard_Metaboxes' ) ){
     );
   }
 
-  public static function phila_metabox_v2_textarea(){
+  /*
+  * With an update to the metabox plugin, multiple, clonable, grouped wysiwyg areas are now possible meaning that the old textarea function below can be replaced with a wysiwyg. To preserve the IDs, we'll simply change the name of this function and update it in all the relevant areas. This can probably be phased out in favor of the original phila_metabox_v2_wysiwyg function.
+  *
+  */
+  public static function phila_metabox_v2_wysiwyg_upgraded(){
 
     // Custom Text
     return array(
       array(
-        'name' => 'Custom Text Title',
+        'name' => 'Heading',
         'id'   => 'phila_custom_text_title',
         'type' => 'text',
+        'class' => 'percent-100'
       ),
       array(
-        'name' => 'Custom Text Content',
+        'name' => 'Content',
         'id'   => 'phila_custom_text_content',
-        'type' => 'textarea',
+        'type' => 'wysiwyg',
+        'options' => Phila_Gov_Standard_Metaboxes::phila_wysiwyg_options_basic()
       ),
     );
   }
@@ -189,35 +235,39 @@ if ( class_exists('Phila_Gov_Standard_Metaboxes' ) ){
         'name' => 'Row Title',
         'id'   => 'phila_custom_row_title',
         'type' => 'text',
+        'class' => 'percent-100'
       ),
       array(
         'id'   => 'phila_custom_text_group',
         'type' => 'group',
         'clone' => true,
         'max_clone' => 3,
-        'fields' => Phila_Gov_Standard_Metaboxes::phila_metabox_v2_textarea(),
+        'fields' => Phila_Gov_Standard_Metaboxes::phila_metabox_v2_wysiwyg_upgraded(),
       )
     );
   }
 
-  public static function phila_metabox_v2_wysiwyg(){
+  public static function phila_metabox_v2_wysiwyg($section_name = 'Section title', $wysiwyg_desc = '', $columns = 12){
 
     //WYSIWYG with Title
     return array(
       'id'  =>  'phila_custom_wysiwyg',
       'type'  => 'group',
       'clone' => false,
+      'columns'=> $columns,
 
       'fields'  => array(
         array(
-          'name'  => 'Section Title',
+          'name'  => $section_name,
           'id'  => 'phila_wysiwyg_title',
-          'type'  => 'text'
+          'type'  => 'text',
+          'class' => 'percent-100'
         ),
         array(
           'id'  => 'phila_wysiwyg_content',
           'type'  => 'wysiwyg',
-          'options' => Phila_Gov_Standard_Metaboxes::phila_wysiwyg_options_basic()
+          'desc'  => $wysiwyg_desc,
+          'options' => Phila_Gov_Standard_Metaboxes::phila_wysiwyg_options_basic_heading()
         )
       )
     );
@@ -236,7 +286,7 @@ if ( class_exists('Phila_Gov_Standard_Metaboxes' ) ){
           'placeholder' => 'Heading',
           'id'  => 'phila_wysiwyg_heading',
           'type'  => 'text',
-          'class' => 'width-95'
+          'class' => 'percent-95'
         ),
         array(
           'id'  => 'phila_wysiwyg_content',
@@ -244,14 +294,16 @@ if ( class_exists('Phila_Gov_Standard_Metaboxes' ) ){
           'options' => Phila_Gov_Standard_Metaboxes::phila_wysiwyg_options_basic_heading()
         ),
         array(
-          'desc'  => 'Include an address?',
+          'name'  => 'Include an address?',
           'id'  => 'phila_address_select',
-          'type'  => 'checkbox',
+          'type'  => 'switch',
+          'on_label'  => 'Yes',
+          'off_label' => 'No'
         ),
         array(
           'id' => 'phila_std_address',
           'type' => 'group',
-          'visible' => array('phila_address_select', true),
+          'hidden' => array('phila_address_select', false),
 
           'fields' => array(
             Phila_Gov_Standard_Metaboxes::phila_metabox_v2_address_fields(),
@@ -277,7 +329,7 @@ if ( class_exists('Phila_Gov_Standard_Metaboxes' ) ){
           'placeholder' => 'Step Heading',
           'id'  => 'phila_step_wysiwyg_heading',
           'type'  => 'text',
-          'class' => 'width-95'
+          'class' => 'percent-95'
         ),
         array(
           'id'  => 'phila_step_wysiwyg_content',
@@ -285,9 +337,11 @@ if ( class_exists('Phila_Gov_Standard_Metaboxes' ) ){
           'options' => Phila_Gov_Standard_Metaboxes::phila_wysiwyg_options_basic()
         ),
         array(
-          'desc'  => 'Does this step contain an address?',
+          'name'  => 'Does this step contain an address?',
           'id'  => 'phila_address_step',
-          'type'  => 'checkbox',
+          'type'  => 'switch',
+          'on_label'  => 'Yes',
+          'off_label' => 'No'
         ),
         array(
           'id' => 'phila_std_address',
@@ -302,22 +356,32 @@ if ( class_exists('Phila_Gov_Standard_Metaboxes' ) ){
     );
   }
 
-  public static function phila_metabox_v2_link_fields( $name, $id ){
+  public static function phila_metabox_v2_link_fields( $name, $id, $required = true, $columns = 12, $clone = false, $max_clone = 2){
     return array(
       'id'  => $id,
       'name'  => $name,
       'type'  => 'group',
-      'clone' => false,
+      'clone' => $clone,
+      'max_clone' => $max_clone,
       'sort_clone'  => false,
+      'columns' => $columns,
+      'add_button'  => 'Add another link',
 
       'fields'  => array(
         array(
           'type' => 'heading',
           'name' => 'Link details',
         ),
-        Phila_Gov_Standard_Metaboxes::phila_metabox_title('Clickable link text', 'link_text', '', $size = 50, $columns = 12  ),
-        Phila_Gov_Standard_Metaboxes::phila_metabox_url('Link URL', 'link_url' ),
-        Phila_Gov_Standard_Metaboxes::phila_metabox_external('', 'is_external' ),
+        array(
+          'name' => 'Clickable link text',
+          'id' => 'link_text',
+          'type'  => 'text',
+          'size' => 50,
+          'columns' => 12,
+          'required' => $required
+         ),
+        Phila_Gov_Standard_Metaboxes::phila_metabox_url('URL', 'link_url', '', 12 ),
+        Phila_Gov_Standard_Metaboxes::phila_metabox_external($id = 'is_external'),
       )
     );
   }
@@ -333,7 +397,7 @@ if ( class_exists('Phila_Gov_Standard_Metaboxes' ) ){
     );
   }
 
-  public static function phila_v2_service_page_selector(){
+  public static function phila_v2_service_page_selector( $multiple = false ){
     return array(
       'id'  => 'phila_v2_service_page',
       'name' => 'Select service page',
@@ -341,14 +405,41 @@ if ( class_exists('Phila_Gov_Standard_Metaboxes' ) ){
       'field_type' => 'select_advanced',
       'post_type' => 'service_page',
       'query_args'  => array(
+        'posts_per_page' => -1,
+        'post_status' => 'any',
         'orderby' => 'title',
         'order' => 'ASC',
         'meta_key' => 'phila_template_select',
         'meta_value' => 'service_stub',
         'meta_compare' => '!=',
         ),
-      'multiple'  => false,
+      'multiple'  => $multiple,
       'placeholder' => ' ',
+      'desc'     =>  'Add service pages. You can narrow your search options by typing in the field above.',
+      'js_options'  => array(
+        'width' => '100%',
+        'closeOnSelect' => false,
+      )
+    );
+  }
+
+  public static function phila_program_page_selector( $multiple = false ){
+
+    return array(
+      'name'          => 'Select program pages',
+      'id'          => 'phila_select_programs',
+      'type'        => 'post',
+      'post_type'   => 'programs',
+      'field_type'  => 'select_advanced',
+      'placeholder' => '',
+      'desc'     =>  'Add program pages. You can narrow your search options by typing in the field above.',
+      'multiple'  => $multiple,
+
+      'query_args'  => array(
+        'post_status'    => 'any',
+        'posts_per_page' => - 1,
+        'post_parent' => 0
+      ),
       'js_options'  => array(
         'width' => '100%',
         'closeOnSelect' => false,
@@ -463,20 +554,23 @@ if ( class_exists('Phila_Gov_Standard_Metaboxes' ) ){
     return array(
       'name'  => $name,
       'id'    => $id,
-      'type'  => 'url',
+      'type'  => 'text',
       'class' => 'metabox-url',
       'desc'  => $desc,
-      'columns' => $columns
+      'columns' => $columns,
+      'class' => 'percent-100',
     );
   }
 
-  public static function phila_metabox_external( $name, $id, $columns = '12' ){
+  public static function phila_metabox_external( $id, $columns = 12 ){
     return array(
-      'name'  => $name,
+      'name'  => 'Does this link direct users away from phila.gov?',
       'id'    => $id,
-      'type'  => 'checkbox',
-      'desc'  => 'Does this link direct users away from phila.gov?',
-      'columns' => $columns
+      'type'  => 'switch',
+      'on_label'  => 'Yes',
+      'off_label' => 'No',
+      'columns' => $columns,
+      'class' => 'is-external',
     );
   }
 
@@ -505,4 +599,523 @@ if ( class_exists('Phila_Gov_Standard_Metaboxes' ) ){
     );
   }
 
-}
+  public static function phila_call_to_action_group_content( $datalist = null ){
+    return array(
+      array(
+        'name'  => 'Link title',
+        'id'    => 'phila_action_panel_cta_text_multi',
+        'type'  => 'text',
+        'class' => 'action-panel-cta-text',
+        'size'  => '40',
+        'datalist' => $datalist
+      ),
+      array(
+        'name'  => 'Summary',
+        'id'    => 'phila_action_panel_summary_multi',
+        'type'  => 'textarea',
+        'class' => 'action-panel-details',
+      ),
+      array(
+        'name'  => 'Icon',
+        'id'    => 'phila_action_panel_fa_multi',
+        'type'  => 'text',
+        'class' => 'action-panel-fa',
+        'desc'  => 'Uses <a href="http://fontawesome.io/icons/" target="_blank">Font Awesome</a> icons. Eg: fa-bell'
+      ),
+      array(
+        'name'  => 'Link url',
+        'id'    => 'phila_action_panel_link_multi',
+        'type'  => 'text',
+        'class' => 'action-panel-link',
+        'columns' => 6,
+      ),
+      Phila_Gov_Standard_Metaboxes::phila_metabox_external($id = 'phila_action_panel_link_loc_multi'),
+    );
+  }
+
+  public static function phila_meta_var_callout (){
+    return array(
+       // array(
+       //   'name' => 'Status',
+       //   'id'   => 'phila_callout_type',
+       //   'type' => 'select',
+       //   'options' => array(
+       //     'default' => 'Default',
+       //     'important' => 'Important'
+       //   ),
+       // ),
+       array(
+         'name' => ' Text',
+         'id'   => 'phila_callout_text',
+         'type' => 'textarea',
+       ),
+     );
+   }
+
+
+   // Multiple Call to Action (CTA) Panels
+  public static function phila_meta_var_call_to_action_multi (){
+
+    return array(
+      array(
+        'id'  => 'phila_call_to_action_section',
+         'type' => 'group',
+         'fields' => array(
+           array(
+             'name'  => 'Section Title',
+             'id'    => 'phila_action_section_title_multi',
+             'type'  => 'text',
+             'class'  => 'percent-100'
+           ),
+           array(
+             'id'  => 'phila_call_to_action_multi_group',
+             'type' => 'group',
+             'clone'  => true,
+             'max_clone' => 4,
+             'sort_clone' => true,
+             'fields' => array(
+               array(
+                 'name'  => 'Link text',
+                 'id'    => 'phila_action_panel_cta_text_multi',
+                 'type'  => 'text',
+                 'required' => true,
+                 'class' => 'action-panel-cta-text',
+               ),
+               array(
+                 'name'  => 'Summary',
+                 'id'    => 'phila_action_panel_summary_multi',
+                 'type'  => 'textarea',
+                 'class' => 'action-panel-details',
+               ),
+               array(
+                 'name'  => 'Icon',
+                 'id'    => 'phila_action_panel_fa_multi',
+                 'type'  => 'text',
+                 'class' => 'action-panel-fa',
+               ),
+               array(
+                 'name'  => 'Add a circle background?',
+                 'id'    => 'phila_action_panel_fa_circle_multi',
+                 'type'  => 'switch',
+                 'class' => 'action-panel-fa',
+                 'std'  => 1,
+                 'on_label'  => 'Yes',
+                 'off_label' => 'No'
+
+               ),
+               array(
+                 'name'  => 'URL to content',
+                 'id'    => 'phila_action_panel_link_multi',
+                 'type'  => 'text',
+                 'class' => 'action-panel-link',
+                 'columns'  => 12,
+               ),
+               Phila_Gov_Standard_Metaboxes::phila_metabox_external($id = 'phila_action_panel_link_loc_multi')
+             ),
+           ),
+           array(
+             'name'  =>  'Additional URL Title (optional)',
+             'id'    => 'phila_url_title',
+             'type'  => 'text',
+             'visible' => array('phila_full_options_select', '=', 'phila_resource_list'),
+           ),
+           array(
+             'name'  =>  'Additional URL (optional)',
+             'id'    => 'phila_url',
+             'type'  => 'url',
+             'visible' => array('phila_full_options_select', '=', 'phila_resource_list'),
+           ),
+           array(
+             'name'  =>  'Background Image',
+             'id'    => 'phila_bg_image',
+             'type'  => 'file_input',
+             'visible' => array('phila_full_options_select', '=', 'phila_get_involved'),
+           ),
+         ),
+       ),
+     );
+   }
+  // List of links with FontAwesome icons
+  public static function phila_meta_var_list_items (){
+
+    return array(
+     array(
+       'name' => 'Row Title',
+       'id'   => 'phila_row_title',
+       'type' => 'text',
+     ),
+     array(
+       'name' => 'Summary',
+       'id'   => 'phila_summary',
+       'type' => 'textarea',
+     ),
+     array(
+       'id'  => 'phila_list',
+       'type' => 'group',
+       'clone'  => true,
+       'sort_clone' => true,
+
+       'fields' => array(
+         array(
+           'std' => '<strong>Row</strong>',
+           'type' => 'custom_html',
+         ),
+         array(
+           'id'   => 'phila_list_items',
+           'type' => 'group',
+           'clone'  => true,
+           'sort_clone' => true,
+           'fields' => array(
+             array(
+               'name' => __('Item Title', 'rwmb'),
+               'id'   => 'phila_list_item_title',
+               'type' => 'text',
+               'required' => true,
+             ),
+             array(
+               'name' => __('Item URL', 'rwmb'),
+               'id'   => 'phila_list_item_url',
+               'type' => 'url',
+               'required' => true,
+             ),
+             array(
+                'name' => __('Item Icon', 'rwmb'),
+                'id'   => 'phila_list_item_type',
+                'type' => 'text',
+             ),
+           ),
+         ),
+       ),
+     ),
+   );
+  }
+
+  // Feature Programs and Initiatives
+  public static function phila_meta_var_feature_programs_initiatives (){
+   return array(
+      array(
+        'id' => 'phila_p_i',
+        'type' => 'group',
+        'fields' => array(
+          array(
+            'name' => 'Feature Program',
+            'id' => 'phila_p_i_items',
+            'type' => 'post',
+            'post_type' => 'department_page',
+            'clone' => true,
+            'max_clone' => 3,
+          ),
+        ),
+      ),
+    );
+  }
+public static function phila_meta_var_connect(){
+  return array(
+      array(
+       'name' => 'Connect Panel',
+       'id'   => 'phila_connect_description',
+       'type' => 'custom_html',
+       'std'  => '<span>Use any of the optional fields below to add social media, address, and contact information.</span><br/>
+       <span><em>Note: If all fields are left empty the <strong>Connect</strong> module will still appear on the page, however it will be empty.</em></span>',
+      ),
+      array(
+        'id' => 'phila_connect_social',
+        'type' => 'group',
+        'fields' => array(
+          array(
+            'type' => 'heading',
+            'name' => 'Social',
+          ),
+          array(
+           'name' => 'Facebook URL',
+           'id'   => 'phila_connect_social_facebook',
+           'type' => 'url',
+           'desc' => 'Example: https://www.facebook.com/PhiladelphiaCityGovernment/',
+          ),
+          array(
+           'name' => 'Twitter URL',
+           'id'   => 'phila_connect_social_twitter',
+           'type' => 'url',
+           'desc' => 'Example: https://twitter.com/PhiladelphiaGov'
+          ),
+          array(
+           'name' => 'Instagram URL',
+           'id'   => 'phila_connect_social_instagram',
+           'type' => 'url',
+           'desc' => 'Example: https://www.instagram.com/cityofphiladelphia/'
+          ),
+          array(
+           'name' => 'YouTube URL',
+           'id'   => 'phila_connect_social_youtube',
+           'type' => 'url',
+           'desc' => 'Example: https://www.youtube.com/user/philly311center'
+          ),
+          array(
+           'name' => 'Flickr URL',
+           'id'   => 'phila_connect_social_flickr',
+           'type' => 'url',
+           'desc' => 'Example: https://www.flickr.com/photos/philly_cityrep/'
+          ),
+        ),
+      ),
+      array(
+        'id' => 'phila_connect_address',
+        'type' => 'group',
+        // List of sub-fields
+        'fields' => array(
+          array(
+            'type' => 'heading',
+            'name' => 'Address',
+          ),
+          array(
+           'name' => 'Street Address 1',
+           'id'   => 'phila_connect_address_st_1',
+           'type' => 'text',
+          ),
+          array(
+           'name' => 'Street Address 2',
+           'id'   => 'phila_connect_address_st_2',
+           'type' => 'text',
+          ),
+          array(
+           'name' => 'City',
+           'id'   => 'phila_connect_address_city',
+           'type' => 'text',
+           'std' => 'Philadelphia',
+          ),
+          array(
+           'name' => 'State',
+           'id'   => 'phila_connect_address_state',
+           'type' => 'text',
+           'std' => 'PA',
+          ),
+          array(
+           'name' => 'Zip',
+           'id'   => 'phila_connect_address_zip',
+           'type' => 'text',
+           'std' => '19107',
+          ),
+        ),
+      ),
+      array(
+        'id' => 'phila_connect_general',
+        'type' => 'group',
+        // List of sub-fields
+        'fields' => array(
+          array(
+            'type' => 'heading',
+            'name' => 'Contact',
+          ),
+          array(
+             'name' => 'Phone',
+             'id'   => 'phila_connect_phone',
+             'type' => 'phone',
+             'desc' => '(###)-###-####',
+           ),
+          array(
+            'name' => 'Fax',
+            'id'   => 'phila_connect_fax',
+            'type' => 'phone',
+            'desc' => '(###)-###-####',
+          ),
+          array(
+            'name' => 'Email',
+            'id'   => 'phila_connect_email',
+            'type' => 'email',
+            'desc' => 'example@phila.gov',
+          ),
+          Phila_Gov_Standard_Metaboxes::phila_metabox_v2_link_fields('Website', 'phila_web_link', false),
+
+          array(
+            'name' => 'See all contact information',
+            'id'  => 'connect_see_all',
+            'type' => 'URL'
+          )
+        ),
+      ),
+    );
+  }
+
+  // Custom Featured Content
+  public static function phila_meta_var_custom_feature(){
+    return array(
+      array(
+        'name' => 'Feature Title',
+        'id' => 'phila_feature_title',
+        'type' => 'text',
+      ),
+      array(
+        'name' => 'Feature Image',
+        'id' => 'phila_feature_image',
+        'type' => 'file_input',
+      ),
+      array(
+        'name' => 'Feature Text',
+        'id' => 'phila_feature_text',
+        'type' => 'textarea',
+      ),
+      array(
+        'name' => 'Feature URL Text',
+        'id' => 'phila_feature_url_text',
+        'type' => 'text',
+      ),
+      array(
+        'name' => 'URL',
+        'id' => 'phila_feature_url',
+        'type' => 'url',
+      ),
+    );
+  }
+
+  // Pullquote
+  public static function phila_meta_var_pullquote(){
+    return array(
+      array(
+        'name' => 'Quote',
+        'id'   => 'phila_quote',
+        'type' => 'textarea',
+      ),
+      array(
+        'name' => 'Attribution',
+        'id'   => 'phila_attribution',
+        'type' => 'text',
+      ),
+    );
+  }
+
+  public static function phila_meta_var_full_width_cta(){
+    return array(
+      Phila_Gov_Standard_Metaboxes::phila_metabox_title( 'Title', 'cta_full_title', '50 character maximum.' ),
+      Phila_Gov_Standard_Metaboxes::phila_metabox_textarea('Description', 'cta_full_description', '140 character maximum.' ),
+      Phila_Gov_Standard_Metaboxes::phila_metabox_v2_link_fields('', 'cta_full_link'),
+      array(
+        'id' => 'cta_is_survey',
+        'name'  => 'Is this a link to a survey or other form of feedback gathering?',
+        'type'  => 'switch',
+        'on_label'  => 'Yes',
+        'off_label' => 'No'
+      ),
+      array(
+        'id' => 'cta_is_modal',
+        'name'  => 'Should this content appear in a modal?',
+        'type'  => 'switch',
+        'on_label'  => 'Yes',
+        'off_label' => 'No'
+      ),
+      array(
+        'id'   => 'cta_modal',
+        'type'  => 'group',
+        'visible' => array( 'cta_is_modal', 1 ),
+
+        'fields' => array(
+          array(
+            'type' => 'heading',
+            'name'  => 'Modal content',
+          ),
+          array(
+            'name' => '',
+            'id'   => 'cta_modal_content',
+            'type' => 'textarea',
+          ),
+          Phila_Gov_Standard_Metaboxes::phila_v2_icon_selection( ),
+        ),
+      ),
+    );
+  }
+  public static function phila_meta_registration() {
+    return array(
+        array(
+          'name'  => 'Registration row title',
+          'id'    => 'title',
+          'type'  => 'text',
+          'class' => 'percent-100',
+          'placeholder' => 'E.g. Enrollment',
+          'desc'  => 'Registration is closed by default. Start and end dates determine when registration should be displayed as open. Start and end dates are not displayed.',
+        ),
+        array(
+          'name' => 'Registration start date',
+          'id'  => 'start_date',
+          'type'  => 'date',
+          'timestamp' => true,
+          'columns' => 6,
+        ),
+        array(
+          'name' => 'Registration closed date',
+          'id'  => 'end_date',
+          'type'  => 'date',
+          'timestamp' => true,
+          'columns' => 6,
+        ),
+        array(
+          'id'  => 'open',
+          'type'  => 'group',
+          'fields'  => array(
+            array(
+              'type' => 'heading',
+              'name' => 'Registration is open -  Heading, description, and links',
+            ),
+            Phila_Gov_Standard_Metaboxes::phila_metabox_v2_wysiwyg('', $wysiwyg_desc = '', $columns = 6),
+            Phila_Gov_Standard_Metaboxes::phila_metabox_v2_link_fields($name = '', $id = 'links', $required  = false, $columns = 6, $clone = true),
+          )
+        ),
+        array(
+          'id'  => 'closed',
+          'type'  => 'group',
+          'fields'  => array(
+            array(
+              'type' => 'heading',
+              'name' => 'Registration is closed - Heading and description',
+            ),
+            Phila_Gov_Standard_Metaboxes::phila_metabox_v2_wysiwyg('', $wysiwyg_desc = '', $columns = 12),
+          )
+        )
+    );
+  }
+
+  public static function phila_meta_var_commission_members(){
+    return array(
+      'id' => 'phila_commission_members',
+      'type'  => 'group',
+      'desc'  => 'Use this section to create an accordion-style list of people who don\'t formally work for the City of Philadelphia. List will appear in the order above.',
+      'clone' => true,
+      'sort_clone' => true,
+      'fields'  => array(
+        array(
+          'id'  => 'full_name',
+          'name'  => 'Full name',
+          'type'  => 'text',
+          'desc'  => 'Enter the full name, with honorific e.g.: Dr. Herbert West, PhD'
+        ),
+        array(
+          'id'  => 'title',
+          'name'  => 'Title',
+          'type'  => 'text',
+          'desc'  => 'E.g.: Chief of Staff/Reanimator'
+        ),
+        array(
+          'id'  => 'email',
+          'name'  => 'Email address',
+          'type'  => 'email',
+        ),
+        array(
+          'id'  => 'phone',
+          'name'  => 'Phone',
+          'type'  => 'phone'
+        ),
+        array(
+          'id'  => 'headshot',
+          'name'  => 'Headshot',
+          'type'  => 'file_advanced',
+          'max_file_uploads' => 1,
+          'desc'  => 'Image size: 400px by 400px.'
+        ),
+        array(
+          'name' => 'Bio',
+          'id'   => 'bio',
+          'type' => 'wysiwyg',
+          'options' =>    Phila_Gov_Standard_Metaboxes::phila_wysiwyg_options_basic($editor_height = 100)
+        ),
+      )
+    );
+  }
+}//end Class

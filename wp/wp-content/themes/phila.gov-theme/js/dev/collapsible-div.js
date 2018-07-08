@@ -1,12 +1,17 @@
 module.exports = $(function(){
-  // Staff summary expand
-  $('[data-toggle="data-staff-bio"]').click(function(e){
+  // Any div summary expand
+  $('[data-toggle="expandable"]').click(function(e){
     e.preventDefault();
-    $(this).parent().siblings().toggleClass('expandable');
+    $(this).siblings().toggleClass('expandable');
     if($(this).html() === ' Expand + '){
       $(this).html(' Collapse - ');
     } else {
       $(this).html(' Expand + ');
     }
   });
+
+  if(Foundation.MediaQuery.current == 'small') {
+    $('.accordion').foundation('up', $('.accordion-content'));
+  }
+
 });

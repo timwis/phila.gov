@@ -16,102 +16,28 @@ class Phila_Gov_Admin_Templates {
 
   public function __construct(){
 
-    add_filter( 'rwmb_meta_boxes', array( $this, 'phila_register_template_selection_metabox_departments'), 10, 1 );
+    add_filter( 'rwmb_outside_conditions', array( $this, 'post_box_hide_from_non_admins' ), 10, 1 );
 
-    add_filter( 'rwmb_outside_conditions', array( $this, 'phila_hide_categories' ), 10, 1 );
+    add_filter( 'rwmb_meta_boxes', array( $this, 'register_template_selection_metabox_service_pages' ), 10, 1 );
 
-    add_filter( 'rwmb_meta_boxes', array( $this, 'phila_register_template_selection_metabox_wp_pages' ), 10, 1 );
+    add_filter( 'rwmb_meta_boxes', array( $this, 'register_template_selection_metabox_posts' ), 10, 1 );
+
 
  }
 
- function phila_register_template_selection_metabox_departments( $meta_boxes ){
-
-  $meta_boxes[] = array(
-    'id'       => 'template_selection',
-    'title'    => 'Select Template',
-    'pages'    => array( 'department_page' ),
-    'context'  => 'advanced',
-    'priority' => 'high',
-
-    'fields' => array(
-      array(
-        'desc'  => '',
-        'id'    => 'phila_template_select',
-        'type'  => 'select',
-        'class' => 'template-select',
-        'clone' => false,
-        'placeholder'  => 'Select a template',
-
-        'options' => array(
-          'default'   => 'Default',
-          'homepage_v2' => 'Department homepage version 2',
-          'one_quarter_headings_v2' => '1/4 headings',
-          'contact_us_v2' => 'Contact page',
-          'all_services_v2' => 'All services',
-          'forms_and_documents_v2' => 'Forms & documents',
-          'resource_list_v2' => 'Resource list',
-          'staff_directory_v2' => 'Staff directory',
-          'disabled'  => '──────────',
-          'off_site_department' => 'Off-site department',
-          'department_homepage' => 'Department homepage',
-          'department_subpage' => 'Department subpage',
-          'programs_initiatives' => 'Programs and initiatives',
-          'resource_list' => 'Resource list',
-          'staff_directory' => 'Staff directory',
-          ),
-          'admin_columns' => array(
-            'position' => 'after date',
-            'title'    => __( 'Template' ),
-            'sort'     => true,
-          ),
-       ),
-       array(
-        'desc'  => 'Should this page appear in the City government directory?',
-        'id'    => 'phila_department_home_page',
-        'type'  => 'checkbox',
-        'hidden' => array(
-          'when' => array(
-            array('phila_template_select', '=', 'homepage_v2' ),
-            array('phila_template_select', '=', 'one_quarter_headings_v2' ),
-            array('phila_template_select', '=', 'contact_us_v2' ),
-            array('phila_template_select', '=', 'all_services_v2' ),
-            array('phila_template_select', '=', 'forms_and_documents_v2' ),
-            array('phila_template_select', '=', 'resource_list_v2' ),
-            array('phila_template_select', '=', 'staff_directory_v2' ),
-          ),
-          'relation' => 'or'
-        ),
-      ),
-    ),
-  );
-   return $meta_boxes;
-  }
 
   //TODO: break these callbacks out into individual functions
-  function phila_hide_categories( $conditions ) {
+  function post_box_hide_from_non_admins( $conditions ) {
 
-    $conditions['categorydiv'] = array(
+    $conditions['#categorydiv'] = array(
       'hidden' => array(
         'when' => array(
           array('phila_get_user_roles_callback()', false ),
         ),
-        'relation' => 'or'
       ),
     );
 
-    $conditions['postdivrich'] = array(
-      'visible' => array(
-        'when' => array(
-          array( 'phila_template_select', '=', '' ),
-          array( 'phila_template_select', '=', 'default' ),
-          array( 'phila_template_select', '=', 'one_quarter_headings_v2' ),
-          array( 'phila_template_select', '=', 'start_process' ),
-        ),
-        'relation' => 'or'
-      ),
-    );
-
-    $conditions['additional-content'] = array(
+    $conditions['.additional-content'] = array(
       'visible' => array(
         'when' => array(
           array( 'phila_template_select', '=', 'default' ),
@@ -121,16 +47,23 @@ class Phila_Gov_Admin_Templates {
         'relation' => 'or'
       ),
     );
-
+    //hide submit div when user is a readonly user
+    $conditions['#submitdiv'] = array(
+      'hidden' => array(
+        'when' => array(
+          array('phila_user_read_only()', true ),
+        ),
+      ),
+    );
     return $conditions;
   }
 
-  function phila_register_template_selection_metabox_wp_pages( $meta_boxes ){
+  function register_template_selection_metabox_service_pages( $meta_boxes ){
 
     $meta_boxes[] = array(
-      'id'       => 'page_template_selection',
+      'id'       => 'service_template_selection',
       'title'    => 'Select Template',
-      'pages'    => array( 'service_page' ),
+      'post_types'    => array( 'service_page' ),
       'context'  => 'advanced',
       'priority' => 'high',
       'fields' => array(
@@ -154,6 +87,38 @@ class Phila_Gov_Admin_Templates {
       ),
     );
      return $meta_boxes;
+  }
+
+  function register_template_selection_metabox_posts( $meta_boxes ){
+
+    $meta_boxes[] = array(
+      'title'    => 'Select Template',
+      'post_types'    => array( 'post' ),
+      'context'  => 'advanced',
+      'priority' => 'high',
+      'fields' => array(
+        array(
+          'placeholder'  => 'Select a template',
+          'id'  => 'phila_template_select',
+          'type'  => 'select',
+          'required'  => true,
+          'options' => array(
+            'post'   => 'Post',
+            'press_release' => 'Press Release',
+            'action_guide'  => 'Action Guide'
+          ),
+          'admin_columns' => array(
+            'position' => 'after date',
+            'title'    => __( 'Template' ),
+            'sort'     => true,
+          ),
+        ),
+      ),
+    );
+
+
+    return $meta_boxes;
+
   }
 
 }

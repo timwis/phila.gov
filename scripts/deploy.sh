@@ -12,24 +12,24 @@ echo 'Running wp-config.sh'
 
 echo 'Running build tasks'
 cd /home/ubuntu/app/wp/wp-content/themes/phila.gov-theme
-sudo npm update
+npm update
 if [ "$PHILA_TEST" ]; then
   echo 'Running test machine tasks'
-  sudo npm rebuild node-sass
-  sudo npm run dev:build
+  npm rebuild node-sass
+  npm run dev:build
 else
   echo 'Running prod tasks'
-  sudo npm run build
-  sudo npm run postbuild
+  npm run build
+  npm run postbuild
 fi
 cd /home/ubuntu/app
 
 echo 'Modifying php configs'
-sudo ed -s /etc/php/7.0/fpm/pool.d/www.conf <<'EOF'
+sudo ed -s /etc/php/7.2/fpm/pool.d/www.conf <<'EOF'
 g/^pm\.max_children/s/5/10
 w
 EOF
-sudo ed -s /etc/php/7.0/fpm/php.ini <<'EOF'
+sudo ed -s /etc/php/7.2/fpm/php.ini <<'EOF'
 g/^post_max_size/s/8/100
 g/^upload_max_filesize/s/2/100
 w
@@ -41,7 +41,7 @@ echo 'Installing private plugins'
 fi
 
 echo 'Reloading php-fpm'
-sudo service php7.0-fpm reload
+sudo service php7.2-fpm reload
 
 echo 'Refreshing WordPress'
 wp rewrite flush

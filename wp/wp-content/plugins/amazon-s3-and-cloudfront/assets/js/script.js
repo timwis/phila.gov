@@ -4,7 +4,9 @@
 	var bucketNamePattern = /[^a-z0-9.-]/;
 	var refreshBucketListOnLoad = false;
 
+	var $body = $( 'body' );
 	var $tabs = $( '.as3cf-tab' );
+	var $settings = $( '.as3cf-settings' );
 	var $activeTab;
 
 	/**
@@ -30,7 +32,7 @@
 
 		$switch.toggleClass( 'on' ).find( 'span' ).toggleClass( 'checked' );
 		var switchOn = $switch.find( 'span.on' ).hasClass( 'checked' );
-		$checkbox.attr( 'checked', switchOn ).trigger( 'change' );
+		$checkbox.prop( 'checked', switchOn ).trigger( 'change' );
 	}
 
 	/**
@@ -45,10 +47,10 @@
 
 		if ( pattern.test( $input.val() ) ) {
 			$error.show();
-			$submit.attr( 'disabled', true );
+			$submit.prop( 'disabled', true );
 		} else {
 			$error.hide();
-			$submit.attr( 'disabled', false );
+			$submit.prop( 'disabled', false );
 		}
 	}
 
@@ -68,9 +70,9 @@
 			$activeTab.show();
 			$( '.nav-tab' ).removeClass( 'nav-tab-active' );
 			$( 'a.nav-tab[data-tab="' + hash + '"]' ).addClass( 'nav-tab-active' );
-			$( '.aws-main' ).attr( 'data-tab', hash );
-			if ( $activeTab.attr( 'data-prefix' ) ) {
-				as3cfModal.prefix = $activeTab.attr( 'data-prefix' );
+			$( '.as3cf-main' ).data( 'tab', hash );
+			if ( $activeTab.data( 'prefix' ) ) {
+				as3cfModal.prefix = $activeTab.data( 'prefix' );
 			}
 			if ( ! persist_updated_notice ) {
 				$( '.as3cf-updated' ).removeClass( 'show' );
@@ -167,7 +169,7 @@
 				return;
 			}
 
-			$bucketList.html( '<li class="loading">' + $bucketList.attr( 'data-working' ) + '</li>' );
+			$bucketList.html( '<li class="loading">' + $bucketList.data( 'working' ) + '</li>' );
 
 			var data = {
 				action: as3cfModal.prefix + '-get-buckets',
@@ -264,7 +266,7 @@
 				return;
 			}
 			$( '.as3cf-bucket-error' ).hide();
-			$manualBucketButton.text( $manualBucketButton.attr( 'data-working' ) );
+			$manualBucketButton.text( $manualBucketButton.data( 'working' ) );
 			$manualBucketButton.prop( 'disabled', true );
 
 			var data = {
@@ -294,6 +296,8 @@
 
 						// Make sure the bucket list will refresh the next time the modal loads
 						refreshBucketListOnLoad = true;
+
+						as3cf.showSettingsSavedNotice();
 					} else {
 						that.showError( as3cf.strings.save_bucket_error, data[ 'error' ], 'as3cf-bucket-manual' );
 					}
@@ -324,14 +328,14 @@
 				return;
 			}
 
-			var previousBucket = $( '.as3cf-bucket-list a.selected' ).attr( 'data-bucket' );
+			var previousBucket = $( '.as3cf-bucket-list a.selected' ).data( 'bucket' );
 
 			$( '.as3cf-bucket-list a' ).removeClass( 'selected' );
 			$link.addClass( 'selected' );
 
 			$bucketList.addClass( 'saving' );
 			$link.find( '.spinner' ).show().css( 'visibility', 'visible' );
-			var bucketName = $link.attr( 'data-bucket' );
+			var bucketName = $link.data( 'bucket' );
 
 			var data = {
 				action: as3cfModal.prefix + '-save-bucket',
@@ -358,6 +362,8 @@
 					if ( 'undefined' !== typeof data[ 'success' ] ) {
 						that.set( bucketName, data[ 'region' ], data[ 'can_write' ] );
 						$( '#' + as3cfModal.prefix + '-bucket-select' ).val( '' );
+
+						as3cf.showSettingsSavedNotice();
 					} else {
 						that.showError( as3cf.strings.save_bucket_error, data[ 'error' ], 'as3cf-bucket-select' );
 						$( '.as3cf-bucket-list a' ).removeClass( 'selected' );
@@ -379,15 +385,15 @@
 			var $manualBucketForm = $( '.as3cf-bucket-container.' + as3cfModal.prefix + ' .as3cf-manual-save-bucket-form' );
 
 			if ( $createBucketForm.find( '.as3cf-bucket-name' ).val().length < 3 ) {
-				$createBucketForm.find( 'button[type=submit]' ).attr( 'disabled', true );
+				$createBucketForm.find( 'button[type=submit]' ).prop( 'disabled', true );
 			} else {
-				$createBucketForm.find( 'button[type=submit]' ).attr( 'disabled', false );
+				$createBucketForm.find( 'button[type=submit]' ).prop( 'disabled', false );
 			}
 
 			if ( $manualBucketForm.find( '.as3cf-bucket-name' ).val().length < 3 ) {
-				$manualBucketForm.find( 'button[type=submit]' ).attr( 'disabled', true );
+				$manualBucketForm.find( 'button[type=submit]' ).prop( 'disabled', true );
 			} else {
-				$manualBucketForm.find( 'button[type=submit]' ).attr( 'disabled', false );
+				$manualBucketForm.find( 'button[type=submit]' ).prop( 'disabled', false );
 			}
 		},
 
@@ -480,7 +486,7 @@
 			var origButtonText = $createBucketButton.text();
 
 			$( '.as3cf-bucket-error' ).hide();
-			$createBucketButton.text( $createBucketButton.attr( 'data-working' ) );
+			$createBucketButton.text( $createBucketButton.data( 'working' ) );
 			$createBucketButton.prop( 'disabled', true );
 
 			var data = {
@@ -512,12 +518,14 @@
 
 						// Tidy up create bucket form
 						$( '.as3cf-bucket-select-region' ).hide();
-						$( '.as3cf-bucket-select-region' ).removeAttr( 'selected' );
+						$( '.as3cf-bucket-select-region' ).prop( 'selected', false );
 						$createBucketInput.val( '' );
-						$createBucketButton.attr( 'disabled', true );
+						$createBucketButton.prop( 'disabled', true );
 
 						// Make sure the bucket list will refresh the next time the modal loads
 						refreshBucketListOnLoad = true;
+
+						as3cf.showSettingsSavedNotice();
 					} else {
 						that.showError( as3cf.strings.create_bucket_error, data[ 'error' ], 'as3cf-bucket-create' );
 					}
@@ -572,6 +580,35 @@
 	};
 
 	/**
+	 * Reload the page, and show the persistent updated notice.
+	 *
+	 * Intended for use on plugin settings page.
+	 */
+	as3cf.reloadUpdated = function() {
+		var url = location.pathname + location.search;
+
+		if ( ! location.search.match( /[?&]updated=/ ) ) {
+			url += '&updated=1';
+		}
+
+		url += location.hash;
+
+		location.assign( url );
+	};
+
+	/**
+	 * Show the standard "Settings saved." notice if not already visible.
+	 */
+	as3cf.showSettingsSavedNotice = function() {
+		if ( 0 < $( '#setting-error-settings_updated:visible' ).length || 0 < $( '#as3cf-settings_updated:visible' ).length ) {
+			return;
+		}
+		var settingsUpdatedNotice = '<div id="as3cf-settings_updated" class="updated settings-error notice is-dismissible"><p><strong>' + as3cf.strings.settings_saved + '</strong></p></div>';
+		$( 'h2.nav-tab-wrapper' ).after( settingsUpdatedNotice );
+		$( document ).trigger( 'wp-updates-notice-added' ); // Hack to run WP Core's makeNoticesDismissible() function.
+	};
+
+	/**
 	 * Get the link to the bucket on the AWS Console and update the DOM
 	 *
 	 * @returns {string}
@@ -582,7 +619,7 @@
 		var prefix = $objectPrefix.val();
 
 		if ( '' !== prefix ) {
-			prefix = '&prefix=' + encodeURIComponent( prefix );
+			prefix = as3cf.aws_bucket_link_param + encodeURIComponent( prefix );
 		}
 
 		var url = as3cf.aws_bucket_link + bucket + prefix;
@@ -662,13 +699,89 @@
 			return;
 		}
 
-		// Strip the # if still on the end of the URL
-		if ( 'function' === typeof history.replaceState && '#' === location.href.slice( -1 ) ) {
-			history.replaceState( {}, '', location.href.slice( 0, -1 ) );
+		as3cf.tabs.toggle( location.hash.replace( '#', '' ), true );
+
+		$( document ).trigger( 'as3cf.tabRendered', [ location.hash.replace( '#', '' ) ] );
+	}
+
+	/**
+	 * Access Keys API object
+	 * @constructor
+	 */
+	var AccessKeys = function() {
+		this.$key = $settings.find( 'input[name="aws-access-key-id"]' );
+		this.$secret = $settings.find( 'input[name="aws-secret-access-key"]' );
+		this.$spinner = $settings.find( '[data-as3cf-aws-keys-spinner]' );
+		this.$feedback = $settings.find( '[data-as3cf-aws-keys-feedback]' );
+	};
+
+	/**
+	 * Set the access keys using the values in the settings fields.
+	 */
+	AccessKeys.prototype.set = function() {
+		this.sendRequest( 'set', {
+			'aws-access-key-id': this.$key.val(),
+			'aws-secret-access-key': this.$secret.val()
+		} ).done( function( response ) {
+			if ( response.success ) {
+				this.$secret.val( as3cf.strings.not_shown_placeholder );
+			}
+		}.bind( this ) );
+	};
+
+	/**
+	 * Remove the access keys from the database and clear the fields.
+	 */
+	AccessKeys.prototype.remove = function() {
+		this.sendRequest( 'remove' )
+			.done( function( response ) {
+				if ( response.success ) {
+					this.$key.val( '' );
+					this.$secret.val( '' );
+				}
+			}.bind( this ) )
+		;
+	};
+
+	/**
+	 * Send the request to the server to update the access keys.
+	 *
+	 * @param {string} action The action to perform with the keys
+	 * @param {undefined|Object} params Extra parameters to send with the request
+	 *
+	 * @returns {jqXHR}
+	 */
+	AccessKeys.prototype.sendRequest = function( action, params ) {
+		var data = {
+			action: 'as3cf-aws-keys-' + action,
+			_ajax_nonce: as3cf.nonces[ 'aws_keys_' + action ]
+		};
+
+		if ( _.isObject( params ) ) {
+			data = _.extend( data, params );
 		}
 
-		as3cf.tabs.toggle( location.hash.replace( '#', '' ), true );
-	}
+		this.$spinner.addClass( 'is-active' );
+
+		return $.post( ajaxurl, data )
+			.done( function( response ) {
+				this.$feedback
+					.toggleClass( 'notice-success', response.success )
+					.toggleClass( 'notice-error', ! response.success );
+
+				if ( response.data && response.data.message ) {
+					this.$feedback.html( '<p>' + response.data.message + '</p>' ).show();
+				}
+
+				if ( response.success ) {
+					as3cf.reloadUpdated();
+				}
+			}.bind( this ) )
+			.always( function() {
+				this.$spinner.removeClass( 'is-active' );
+			}.bind( this ) )
+		;
+	};
 
 	$( document ).ready( function() {
 
@@ -679,11 +792,19 @@
 		/**
 		 * Set the hashchange callback to update the rendered active tab.
 		 */
-		window.onhashchange = renderCurrentTab;
+		window.onhashchange = function( event ) {
+
+			// Strip the # if still on the end of the URL
+			if ( 'function' === typeof history.replaceState && '#' === location.href.slice( -1 ) ) {
+				history.replaceState( {}, '', location.href.slice( 0, -1 ) );
+			}
+
+			renderCurrentTab();
+		};
 
 		// Move any compatibility errors below the nav tabs
-		var $navTabs = $( '.wrap.aws-main .nav-tab-wrapper' );
-		$( '.aws-compatibility-notice, div.updated, div.error, div.notice' ).not( '.below-h2, .inline' ).insertAfter( $navTabs );
+		var $navTabs = $( '.as3cf-main .nav-tab-wrapper' );
+		$( '.as3cf-compatibility-notice, div.updated, div.error, div.notice' ).not( '.below-h2, .inline' ).insertAfter( $navTabs );
 
 		// Settings
 		// --------------------
@@ -768,7 +889,7 @@
 			var $submit = $( '#' + $activeTab.attr( 'id' ) + ' form button[type="submit"]' );
 
 			if ( 'cloudfront' !== $input.val() ) {
-				$submit.attr( 'disabled', false );
+				$submit.prop( 'disabled', false );
 			} else {
 				validateCustomDomain( $input.next( '.as3cf-setting' ).find( 'input[name="cloudfront"]' ) );
 			}
@@ -786,17 +907,17 @@
 		$( '#tab-media > .as3cf-bucket-error' ).detach().insertAfter( '.as3cf-bucket-container h3' );
 
 		// Action click handlers
-		$( 'body' ).on( 'click', '.bucket-action-manual', function( e ) {
+		$body.on( 'click', '.bucket-action-manual', function( e ) {
 			e.preventDefault();
 			$( '.as3cf-bucket-container.' + as3cfModal.prefix + ' .as3cf-bucket-manual' ).show().siblings().hide();
 		} );
-		$( 'body' ).on( 'click', '.bucket-action-browse', function( e ) {
+		$body.on( 'click', '.bucket-action-browse', function( e ) {
 			e.preventDefault();
 			$( '.as3cf-bucket-container.' + as3cfModal.prefix + ' .as3cf-bucket-select' ).show().siblings().hide();
 			as3cf.buckets.loadList( refreshBucketListOnLoad );
 			refreshBucketListOnLoad = false;
 		} );
-		$( 'body' ).on( 'click', '.bucket-action-create', function( e ) {
+		$body.on( 'click', '.bucket-action-create', function( e ) {
 			e.preventDefault();
 
 			// Reset create bucket modal
@@ -805,27 +926,27 @@
 
 			$( '.as3cf-bucket-container.' + as3cfModal.prefix + ' .as3cf-bucket-create' ).show().siblings().hide();
 		} );
-		$( 'body' ).on( 'click', '.bucket-action-cancel', function( e ) {
+		$body.on( 'click', '.bucket-action-cancel', function( e ) {
 			e.preventDefault();
 			as3cf.buckets.resetModal();
 		} );
-		$( 'body' ).on( 'click', '.bucket-action-save', function( e ) {
+		$body.on( 'click', '.bucket-action-save', function( e ) {
 			e.preventDefault();
 			as3cf.buckets.saveManual();
 		} );
-		$( 'body' ).on( 'click', '.as3cf-create-bucket-form button[type="submit"]', function( e ) {
+		$body.on( 'click', '.as3cf-create-bucket-form button[type="submit"]', function( e ) {
 			e.preventDefault();
 			as3cf.buckets.create();
 		} );
 
 		// Bucket list refresh handler
-		$( 'body' ).on( 'click', '.bucket-action-refresh', function( e ) {
+		$body.on( 'click', '.bucket-action-refresh', function( e ) {
 			e.preventDefault();
 			as3cf.buckets.loadList( true );
 		} );
 
 		// Bucket list click handler
-		$( 'body' ).on( 'click', '.as3cf-bucket-list a', function( e ) {
+		$body.on( 'click', '.as3cf-bucket-list a', function( e ) {
 			e.preventDefault();
 			as3cf.buckets.saveSelected( $( this ) );
 		} );
@@ -839,7 +960,7 @@
 		} );
 
 		// Modal open
-		$( 'body' ).on( 'as3cf-modal-open', function( e, target ) {
+		$body.on( 'as3cf-modal-open', function( e, target ) {
 			if ( '.as3cf-bucket-container.' + as3cfModal.prefix === target ) {
 
 				// Reset modal
@@ -857,29 +978,44 @@
 		as3cf.buckets.disabledButtons();
 
 		// Validate bucket name on create
-		$( 'body' ).on( 'input keyup', '.as3cf-create-bucket-form .as3cf-bucket-name', function( e ) {
+		$body.on( 'input keyup', '.as3cf-create-bucket-form .as3cf-bucket-name', function( e ) {
 			var bucketName = $( this ).val();
 			var $createBucketForm = $( '.as3cf-bucket-container.' + as3cfModal.prefix + ' .as3cf-create-bucket-form' );
 
 			if ( as3cf.buckets.isValidName( bucketName ) ) {
-				$createBucketForm.find( 'button[type=submit]' ).removeAttr( 'disabled' );
+				$createBucketForm.find( 'button[type=submit]' ).prop( 'disabled', false );
 			} else {
-				$createBucketForm.find( 'button[type=submit]' ).attr( 'disabled', true );
+				$createBucketForm.find( 'button[type=submit]' ).prop( 'disabled', true );
 			}
 			as3cf.buckets.updateNameNotice( bucketName );
 		} );
 
 		// Check bucket name length on manual
-		$( 'body' ).on( 'input keyup', '.as3cf-manual-save-bucket-form .as3cf-bucket-name', function( e ) {
+		$body.on( 'input keyup', '.as3cf-manual-save-bucket-form .as3cf-bucket-name', function( e ) {
 			var $manualBucketForm = $( '.as3cf-bucket-container.' + as3cfModal.prefix + ' .as3cf-manual-save-bucket-form' );
 
 			if ( $manualBucketForm.find( '.as3cf-bucket-name' ).val().length < as3cf.buckets.validLength ) {
-				$manualBucketForm.find( 'button[type=submit]' ).attr( 'disabled', true );
+				$manualBucketForm.find( 'button[type=submit]' ).prop( 'disabled', true );
 			} else {
-				$manualBucketForm.find( 'button[type=submit]' ).removeAttr( 'disabled' );
+				$manualBucketForm.find( 'button[type=submit]' ).prop( 'disabled', false );
 			}
 		} );
 
+		$settings
+			.on( 'click', '[data-as3cf-toggle-access-keys-form]', function( event ) {
+				event.preventDefault();
+				$( '#as3cf_access_keys' ).toggle();
+			} )
+			.on( 'click', '[data-as3cf-aws-keys-action]', function( event ) {
+				event.preventDefault();
+				var action = $( this ).data( 'as3cfAwsKeysAction' );
+				var api = new AccessKeys();
+
+				if ( 'function' === typeof api[action] ) {
+					api[action]();
+				}
+			} )
+		;
 	} );
 
 })( jQuery, as3cfModal );

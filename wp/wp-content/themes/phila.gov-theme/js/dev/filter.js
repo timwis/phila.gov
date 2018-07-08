@@ -1,4 +1,4 @@
-module.exports = jQuery(document).ready(function($) {
+jQuery(document).ready(function($) {
   //TODO: Abstract for use on other data-types
   var parents = $('.a-z-group');
   var hiddenLetter = {};
@@ -108,10 +108,11 @@ module.exports = jQuery(document).ready(function($) {
   });
 
 
+
   //TODO: This can/should be refactored when time permits
   // Mobile Filter
   function getValues() {
-    confirmedValues = $( '#service_filter :checkbox:checked' ).map( function() {
+    var confirmedValues = $( '#service_filter :checkbox:checked' ).map( function() {
       return this.value;
     }).get();
   }
@@ -214,7 +215,6 @@ module.exports = jQuery(document).ready(function($) {
     $servicelist.detach();
     $servicelist.sort( sortReverseAlpha );
     $( '.a-z-list' ).append( $servicelist );
-    console.log( $('.button[data-reverse-alpha-order]').hasClass("outline") );
     if ( $('.button[data-reverse-alpha-order]').hasClass("outline") ){
       $('.button[data-reverse-alpha-order]').removeClass("outline");
       $('.button[data-alpha-order]').addClass("outline");

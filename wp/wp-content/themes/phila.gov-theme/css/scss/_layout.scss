@@ -1,0 +1,157 @@
+//TODO: Add to patterns
+h1 .fa{
+  font-size: 1.6rem;
+
+  @media screen and (min-width: 40em) {
+    font-size: 2rem;
+  }
+}
+//set explicit height on logo for IE10, 11
+#global-sticky-nav{
+  .logo img{
+    height:44px;
+  }
+}
+
+.group::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+#page {
+  position: relative;
+}
+.navigation {
+  margin-top:1rem;
+  font-family: 'Montserrat';
+  text-transform: uppercase;
+  font-size:.95rem;
+  .page-numbers{
+    padding: 5px;
+    &.next, &.prev{
+      padding:0;
+    }
+  }
+  i{
+    color:white;
+    background:color(bell-yellow);
+    padding:5px;
+  }
+}
+
+img.float-left{
+  margin: 1em 1em 1em 0;
+  float:left;
+}
+img.float-right{
+  margin: 1em 0 1em 1em;
+  float:right;
+}
+
+@media screen and (min-width: 64em) {
+  .border-right{
+    border-right:1px solid color(dark-gray);
+  }
+}
+
+.clickable-row{
+  cursor: pointer;
+  opacity: 1;
+  @include transition( background, .2s );
+
+  &:hover {
+    opacity: .5;
+    background: transparent;
+  }
+}
+
+
+@media screen and (min-width: 64em) {
+  .fat-gutter{
+    &.row,
+    &.row .row{
+        margin-left: -$spacing-large;
+        margin-right: -$spacing-large;
+      }
+    .column, .columns {
+        padding-left: $spacing-large;
+        padding-right: $spacing-large;
+    }
+  }
+}
+
+//TODO: add all these as utility to patterns
+.float-none{
+  float:none;
+}
+.text-align-left{
+  text-align: left !important;
+}
+
+.inline-block{
+  display: inline-block;
+}
+.phila-thumb{
+  max-width: 250px;
+}
+
+#site-wide-alert{
+  .close-button{
+    position: static;
+  }
+}
+//prevent page content from being hidden when modal is open
+body.is-reveal-open.no-scroll{
+  height:auto;
+}
+table.connect{
+  margin:0;
+}
+
+:focus{
+  outline: color(dark-gray) solid 2px;
+}
+
+.inside-border-group{
+  .short-desc {
+    font-weight: normal;
+    color:color(dark-gray);
+    border-left: 1px solid color(dark-gray);
+  }
+  @media screen and (max-width: 39.9375em) {
+    a div {
+      display: block;
+      text-align: center;
+      .fa {
+        margin:0;
+        font-size: 4rem;
+      }
+    }
+  }
+}
+.inside-border-group-item a:hover .short-desc{
+  color: white;
+}
+
+//TODO: add to standards
+.full-height{
+  height:100%;
+}
+
+.all-caps{
+  text-transform: uppercase;
+}
+
+ol, ul {
+  padding-left:2rem;
+}
+
+.breadcrumbs{
+  padding:0;
+}
+
+//TODO: Add to standards
+footer.site-footer{
+  margin-top:6rem;
+}

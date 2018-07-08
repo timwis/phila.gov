@@ -174,6 +174,10 @@ abstract class AS3CF_Filter {
 			return $this->filter_text_widget( $instance, $update_cache );
 		}
 
+		if ( $class instanceof WP_Widget_Custom_HTML ) {
+			return $this->filter_custom_html_widget( $instance, $update_cache );
+		}
+
 		return $instance;
 	}
 
@@ -218,6 +222,26 @@ abstract class AS3CF_Filter {
 		$cache            = $this->get_option_cache();
 		$to_cache         = array();
 		$instance['text'] = $this->process_content( $instance['text'], $cache, $to_cache );
+
+		if ( $update_cache ) {
+			$this->maybe_update_option_cache( $to_cache );
+		}
+
+		return $instance;
+	}
+
+	/**
+	 * Filter custom html widget.
+	 *
+	 * @param array $instance
+	 * @param bool  $update_cache
+	 *
+	 * @return array
+	 */
+	protected function filter_custom_html_widget( $instance, $update_cache ) {
+		$cache               = $this->get_option_cache();
+		$to_cache            = array();
+		$instance['content'] = $this->process_content( $instance['content'], $cache, $to_cache );
 
 		if ( $update_cache ) {
 			$this->maybe_update_option_cache( $to_cache );
@@ -293,6 +317,10 @@ abstract class AS3CF_Filter {
 	protected function get_urls_from_img_src( $content, &$to_cache ) {
 		$url_pairs = array();
 
+		if ( ! is_string( $content ) ) {
+			return $url_pairs;
+		}
+
 		if ( ! preg_match_all( '/<img [^>]+>/', $content, $matches ) || ! isset( $matches[0] ) ) {
 			// No img tags found, return
 			return $url_pairs;
@@ -357,6 +385,10 @@ abstract class AS3CF_Filter {
 	 */
 	protected function get_urls_from_content( $content, $cache, &$to_cache ) {
 		$url_pairs = array();
+
+		if ( ! is_string( $content ) ) {
+			return $url_pairs;
+		}
 
 		if ( ! preg_match_all( '/(http|https)?:?\/\/[^"\'\s<>()\\\]*/', $content, $matches ) || ! isset( $matches[0] ) ) {
 			// No URLs found, return
@@ -597,8 +629,22 @@ abstract class AS3CF_Filter {
 		foreach ( $url_pairs as $find => $replace ) {
 			$replace = $this->normalize_replace_value( $replace );
 			$content = str_replace( $find, $replace, $content );
+			$content = $this->url_replaced( $find, $replace, $content );
 		}
 
+		return $content;
+	}
+
+	/**
+	 * Each time a URL is replaced this function is called to allow for logging or further updates etc.
+	 *
+	 * @param string $find    URL with no scheme.
+	 * @param string $replace URL with no scheme.
+	 * @param string $content
+	 *
+	 * @return string
+	 */
+	protected function url_replaced( $find, $replace, $content ) {
 		return $content;
 	}
 
@@ -797,6 +843,10 @@ abstract class AS3CF_Filter {
 	protected function remove_aws_query_strings( $content, $base_url = '' ) {
 		$pattern = '\?[^\s"<\?]*(?:X-Amz-Algorithm|AWSAccessKeyId)=[^\s"<\?]+';
 		$group   = 0;
+
+		if ( ! is_string( $content ) ) {
+			return $content;
+		}
 
 		if ( ! empty( $base_url ) ) {
 			$pattern = preg_quote( $base_url, '/' ) . '[^\s"<\?]+(' . $pattern . ')';

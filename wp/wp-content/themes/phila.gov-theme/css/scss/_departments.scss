@@ -9,7 +9,7 @@
   h2.sub-page-title{
     display: none;
   }
-  .press-releases{
+  .press_releases{
     ul{
       display: block;
     }
@@ -161,9 +161,9 @@
     }
     li[class*="current-menu-item"] > a{
       background: color(ben-franklin-blue);
-      color:color(white);
+      color:white;
       &:hover{
-        color:color(black);
+        color:black;
       }
     }
 
@@ -177,7 +177,7 @@
 
 .connect {
   .panel{
-    border: 0;
+    background:color(ghost-gray);
   }
   .email{
     word-break: break-word;

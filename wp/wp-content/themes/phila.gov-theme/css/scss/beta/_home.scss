@@ -57,7 +57,7 @@
         color: color(medium-gray);
         padding: 0.25rem 0.5rem;
         position: absolute;
-        bottom: 105px;
+        bottom: 45px;
         right: 0;
       }
     }
@@ -204,6 +204,7 @@
       width: 100%;
       text-align: center;
       height:40px;
+      color:white;
 
       .h5 {
         font-weight: bold;
@@ -237,7 +238,7 @@
       }
       &.left-arrow-white {
         &:before {
-          border-left-color: color(white);
+          border-left-color: white;
         }
       }
       &.left-arrow-medium-gray {
@@ -256,7 +257,7 @@
 
       &:after {
         position: absolute;
-        background-color: color(white);
+        background-color: white;
         content: '';
         width: 0;
         height: 0;

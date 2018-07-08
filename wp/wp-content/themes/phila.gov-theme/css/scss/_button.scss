@@ -1,0 +1,41 @@
+@mixin inverse-button(){
+  color:white;
+  text-align: center;
+  &:hover, &:active, &:focus{
+    background: color(dark-gray);
+  }
+}
+.button{
+  &[class*='content-type']{
+    .fa {
+      padding-left:.5rem;
+    }
+  }
+  &.content-type-action_guide{
+    @include inverse-button();
+    margin-top:5px soild white;
+    background: color(punk-pink);
+  }
+  &.content-type-events{
+    @include inverse-button();
+    background: color(phanatic-green);
+  }
+  &.content-type-featured{
+    @include inverse-button();
+    background: color(dark-ben-franklin);
+  }
+  &.content-type-press_release{
+    @include inverse-button();
+    background: color(love-park-red);
+  }
+  &.content-type-post,
+  &.content-type-announcement{
+    @include inverse-button();
+    background: color(pride-purple);
+  }
+}
+
+#site-wide-alert button,
+#site-wide-alert .button{
+  background-color:transparent;
+}

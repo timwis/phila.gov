@@ -11,7 +11,10 @@ rm -f wp-config.php wp/wp-config.php
 if [ "$PHILA_TEST" ]; then
   read -r -d '' DEBUG <<EOF
 /* Debug true on test instances */
-define('WP_DEBUG', true);
+define( 'WP_DEBUG', true );
+define( 'WP_DEBUG_LOG', true );
+define( 'WP_DEBUG_DISPLAY', true );
+
 EOF
 fi
 
@@ -54,6 +57,18 @@ define( 'WPOS3_SETTINGS', serialize( array(
 
 /** For Swiftype search */
 define('SWIFTYPE_ENGINE', '$SWIFTYPE_ENGINE');
+
+/** For Google Calendar Archives */
+define('GOOGLE_CALENDAR', '$GOOGLE_CALENDAR');
+
+/** Don't let stuff sit around too long */
+define('EMPTY_TRASH_DAYS', 7);
+
+/** Disable WP cron, it runs on every page load! */
+define('DISABLE_WP_CRON', true);
+
+/** We manually update WP, so disable auto updates */
+define('WP_AUTO_UPDATE_CORE', false);
 
 /** https://wordpress.org/support/topic/problem-after-the-recent-update */
 define('FS_METHOD', 'direct');

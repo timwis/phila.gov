@@ -35,77 +35,6 @@ if ( ! class_exists( 'AS3CF_Utils' ) ) {
 		}
 
 		/**
-		 * Checks if another version of WP Offload S3 (Lite) is active and deactivates it.
-		 * To be hooked on `activated_plugin` so other plugin is deactivated when current plugin is activated.
-		 *
-		 * @param string $plugin
-		 *
-		 * @return bool
-		 */
-		public static function deactivate_other_instances( $plugin ) {
-			if ( ! in_array( basename( $plugin ), array( 'amazon-s3-and-cloudfront-pro.php', 'wordpress-s3.php' ) ) ) {
-				return false;
-			}
-
-			$plugin_to_deactivate             = 'wordpress-s3.php';
-			$deactivated_notice_id            = '1';
-			$activated_plugin_min_version     = '1.1';
-			$plugin_to_deactivate_min_version = '1.0';
-			if ( basename( $plugin ) === $plugin_to_deactivate ) {
-				$plugin_to_deactivate             = 'amazon-s3-and-cloudfront-pro.php';
-				$deactivated_notice_id            = '2';
-				$activated_plugin_min_version     = '1.0';
-				$plugin_to_deactivate_min_version = '1.1';
-			}
-
-			$version = self::get_plugin_version_from_basename( $plugin );
-
-			if ( version_compare( $version, $activated_plugin_min_version, '<' ) ) {
-				return false;
-			}
-
-			if ( is_multisite() ) {
-				$active_plugins = (array) get_site_option( 'active_sitewide_plugins', array() );
-				$active_plugins = array_keys( $active_plugins );
-			} else {
-				$active_plugins = (array) get_option( 'active_plugins', array() );
-			}
-
-			foreach ( $active_plugins as $basename ) {
-				if ( false !== strpos( $basename, $plugin_to_deactivate ) ) {
-					$version = self::get_plugin_version_from_basename( $basename );
-
-					if ( version_compare( $version, $plugin_to_deactivate_min_version, '<' ) ) {
-						return false;
-					}
-
-					set_transient( 'as3cf_deactivated_notice_id', $deactivated_notice_id, HOUR_IN_SECONDS );
-					deactivate_plugins( $basename );
-
-					return true;
-				}
-			}
-
-			return false;
-		}
-
-		/**
-		 * Get plugin data from basename
-		 *
-		 * @param string $basename
-		 *
-		 * @return string
-		 */
-		public static function get_plugin_version_from_basename( $basename ) {
-			require_once ABSPATH . 'wp-admin/includes/plugin.php';
-
-			$plugin_path = WP_PLUGIN_DIR . '/' . $basename;
-			$plugin_data = get_plugin_data( $plugin_path );
-
-			return $plugin_data['Version'];
-		}
-
-		/**
 		 * Trailing slash prefix string ensuring no leading slashes.
 		 *
 		 * @param $string
@@ -168,11 +97,13 @@ if ( ! class_exists( 'AS3CF_Utils' ) ) {
 		/**
 		 * Parses a URL into its components. Compatible with PHP < 5.4.7.
 		 *
-		 * @param $url string The URL to parse.
+		 * @param     $url string The URL to parse.
 		 *
-		 * @return array|false The parsed components or false on error.
+		 * @param int $component PHP_URL_ constant for URL component to return.
+		 *
+		 * @return mixed An array of the parsed components, mixed for a requested component, or false on error.
 		 */
-		public static function parse_url( $url ) {
+		public static function parse_url( $url, $component = -1 ) {
 			$url       = trim( $url );
 			$no_scheme = 0 === strpos( $url, '//' );
 
@@ -180,9 +111,13 @@ if ( ! class_exists( 'AS3CF_Utils' ) ) {
 				$url = 'http:' . $url;
 			}
 
-			$parts = parse_url( $url );
+			$parts = parse_url( $url, $component );
 
-			if ( $no_scheme ) {
+			if ( 0 < $component ) {
+				return $parts;
+			}
+
+			if ( $no_scheme && is_array( $parts ) ) {
 				unset( $parts['scheme'] );
 			}
 
@@ -197,11 +132,32 @@ if ( ! class_exists( 'AS3CF_Utils' ) ) {
 		 * @return bool
 		 */
 		public static function is_url( $string ) {
-			if ( preg_match( '@^(?:https?:)?\/\/[a-zA-Z0-9\-]{3,}@', $string ) ) {
+			if ( ! is_string( $string ) ) {
+				return false;
+			}
+
+			if ( preg_match( '@^(?:https?:)?//[a-zA-Z0-9\-]+@', $string ) ) {
 				return true;
 			}
 
 			return false;
+		}
+
+		/**
+		 * Is the string a relative URL?
+		 *
+		 * @param $string
+		 *
+		 * @return bool
+		 */
+		public static function is_relative_url( $string ) {
+			if ( empty( $string ) || ! is_string( $string ) ) {
+				return false;
+			}
+
+			$url = static::parse_url( $string );
+
+			return ( empty( $url['scheme'] ) && empty( $url['host'] ) );
 		}
 
 		/**
@@ -356,6 +312,97 @@ if ( ! class_exists( 'AS3CF_Utils' ) ) {
 		 */
 		public static function dbrains_link( $url, $text ) {
 			return sprintf( '<a href="%s">%s</a>', esc_url( $url ), esc_html( $text ) );
+		}
+
+		/**
+		 * Check whether two URLs share the same domain.
+		 *
+		 * @param string $url_a
+		 * @param string $url_b
+		 *
+		 * @return bool
+		 */
+		public static function url_domains_match( $url_a, $url_b ) {
+			if ( ! static::is_url( $url_a ) || ! static::is_url( $url_b ) ) {
+				return false;
+			}
+
+			return static::parse_url( $url_a, PHP_URL_HOST ) === static::parse_url( $url_b, PHP_URL_HOST );
+		}
+
+		/**
+		 * Get the current domain.
+		 *
+		 * @return string|false
+		 */
+		public static function current_domain() {
+			return parse_url( home_url(), PHP_URL_HOST );
+		}
+
+		/**
+		 * Get the base domain of the current domain.
+		 *
+		 * @return string
+		 */
+		public static function current_base_domain() {
+			$domain = static::current_domain();
+			$parts  = explode( '.', $domain, 2 );
+
+			if ( isset( $parts[1] ) && in_array( $parts[0], array( 'www' ) ) ) {
+				return $parts[1];
+			}
+
+			return $domain;
+		}
+
+		/**
+		 * A safe wrapper for deactivate_plugins()
+		 */
+		public static function deactivate_plugins() {
+			if ( ! function_exists( 'deactivate_plugins' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			}
+
+			call_user_func_array( 'deactivate_plugins', func_get_args() );
+		}
+
+		/**
+		 * Get the first defined constant from the given list of constant names.
+		 *
+		 * @param array $constants
+		 *
+		 * @return string|false string constant name if defined, otherwise false if none are defined
+		 */
+		public static function get_first_defined_constant( $constants ) {
+			foreach ( (array) $constants as $constant ) {
+				if ( defined( $constant ) ) {
+					return $constant;
+				}
+			}
+
+			return false;
+		}
+
+		/**
+		 * Ensure returned keys are for correct attachment.
+		 *
+		 * @param array $keys
+		 *
+		 * @return array
+		 */
+		public static function validate_attachment_keys( $attachment_id, $keys ) {
+			$paths     = self::get_attachment_file_paths( $attachment_id, false );
+			$filenames = array_map( 'wp_basename', $paths );
+
+			foreach ( $keys as $key => $value ) {
+				$filename = wp_basename( $value );
+
+				if ( ! in_array( $filename, $filenames ) ) {
+					unset( $keys[ $key ] );
+				}
+			}
+
+			return $keys;
 		}
 	}
 }

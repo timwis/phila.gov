@@ -17,61 +17,53 @@ class Phila_Gov_Custom_Post_Types{
 
   public function __construct(){
 
-    add_action( 'init', array( $this, 'create_phila_department_pages' ) );
+    add_action( 'init', array( $this, 'create_phila_service_pages' ), 1 );
 
-    add_action( 'init', array( $this, 'create_phila_service_pages' ) );
+    add_action( 'init', array( $this, 'create_phila_service_updates' ), 1 );
 
-    add_action( 'init', array( $this, 'create_phila_service_updates' ) );
+    add_action( 'init', array( $this, 'create_phila_site_wide_alert' ), 1 );
 
-    add_action( 'init', array( $this, 'create_phila_news_post' ) );
+    add_action( 'init', array( $this, 'create_phila_document' ), 1 );
 
-    add_action( 'init', array( $this, 'create_phila_press_release' ) );
+    add_action( 'init', array( $this, 'create_phila_staff_directory' ), 1 );
 
-    add_action( 'init', array( $this, 'create_phila_site_wide_alert' ) );
+    add_action( 'init', array( $this, 'create_phila_annoucement' ), 1 );
 
-    add_action( 'init', array( $this, 'create_phila_document' ) );
+    add_action( 'admin_init', array($this, 'redirect_admin_pages'), 1);
 
+
+
+    //deprecated CPTs
     add_action( 'init', array( $this, 'create_phila_posts' ) );
-
-    add_action( 'init', array( $this, 'create_phila_staff_directory' ) );
+    add_action( 'init', array( $this, 'create_phila_news_post' ) );
+    add_action( 'init', array( $this, 'create_phila_press_release' ) );
 
   }
 
-  function create_phila_department_pages() {
-    register_post_type( 'department_page',
-      array(
-        'labels' => array(
-          'name' => __( 'Departments' ),
-          'menu_name' => __('Department Site'),
-          'singular_name' => __( 'Department' ),
-          'add_new'   => __( 'Add a Page' ),
-          'all_items'   => __( 'All Pages' ),
-          'add_new_item' => __( 'Add a Department Page' ),
-          'edit_item'   => __( 'Edit Department Page' ),
-          'view_item'   => __( 'View Department Page' ),
-          'search_items'   => __( 'Search Department Pages' ),
-          'not_found'   => __( 'No Pages Found' ),
-          'not_found_in_trash'   => __( 'Department Page not found in trash' ),
-        ),
-        'taxonomies' => array('category'),
-        'supports' => array(
-          'title',
-          'editor',
-          'page-attributes',
-          'revisions'
-        ),
-        'public' => true,
-        'has_archive' => true,
-        'show_in_nav_menus' => true,
-        'menu_icon' => 'dashicons-groups',
-        'hierarchical' => true,
-        'query_var' => true,
-        'rewrite' => array(
-          'slug' => 'departments',
-          'with_front' => false,
-        ),
-      )
-    );
+
+  /**
+  * Redirect admin pages from old CPTs to Posts
+  *
+  * Redirect admin page to another admin page.
+  *
+  * @access public
+  *
+  * @return void
+  */
+  function redirect_admin_pages(){
+    global $pagenow;
+    if($pagenow == 'edit.php' && isset($_GET['post_type']) && $_GET['post_type'] == 'phila_post'){
+        wp_redirect(admin_url('edit.php', 'http'), 301);
+        exit;
+    }
+    if($pagenow == 'edit.php' && isset($_GET['post_type']) && $_GET['post_type'] == 'news_post'){
+        wp_redirect(admin_url('edit.php', 'http'), 301);
+        exit;
+    }
+    if($pagenow == 'edit.php' && isset($_GET['post_type']) && $_GET['post_type'] == 'press_release'){
+        wp_redirect(admin_url('edit.php', 'http'), 301);
+        exit;
+    }
   }
 
   function create_phila_service_pages() {
@@ -137,6 +129,7 @@ class Phila_Gov_Custom_Post_Types{
       'exclude_from_search' => true,
       'public' => false,
       'show_in_rest' => true,
+      'rest_base' => 'service-updates',
       'show_ui' => true,
       'has_archive' => false,
       'menu_icon' => 'dashicons-warning',
@@ -144,6 +137,41 @@ class Phila_Gov_Custom_Post_Types{
       'rewrite' => array(
         'slug' => 'service-updates',
         'with_front' => false,
+        ),
+      )
+    );
+  }
+
+  function create_phila_annoucement() {
+    register_post_type( 'announcement',
+      array(
+        'labels' => array(
+          'name' => __( 'Announcements' ),
+          'singular_name' => __( 'Announcement' ),
+          'add_new'   => __( 'Add Announcement' ),
+          'all_items'   => __( 'All Announcements' ),
+          'add_new_item' => __( 'Add Announcement' ),
+          'edit_item'   => __( 'Edit Announcements' ),
+          'view_item'   => __( 'View Announcements' ),
+          'search_items'   => __( 'Search Announcements'),
+          'not_found'   => __( 'Announcement not found' ),
+          'not_found_in_trash'   => __( 'Announcement entry not found in trash' ),
+        ),
+        'taxonomies' => array('category', 'post_tag'),
+        'supports' => array(
+          'title',
+          'editor',
+          'revisions'
+        ),
+        'exclude_from_search' => true,
+        'show_in_rest'  => true,
+        'public' => false,
+        'show_ui' => true,
+        'has_archive' => false,
+        'menu_icon' => 'dashicons-id',
+        'hierarchical' => false,
+        'rewrite' => array(
+          'slug' => 'announcements',
         ),
       )
     );
@@ -170,6 +198,9 @@ class Phila_Gov_Custom_Post_Types{
       ),
       'public' => true,
       'has_archive' => true,
+      'show_in_rest' => true,
+      'show_in_menu'  => false,
+      'rest_base' => 'news',
       'menu_icon' => 'dashicons-media-document',
       'hierarchical' => false,
       'supports'  => array(
@@ -222,15 +253,15 @@ class Phila_Gov_Custom_Post_Types{
       array(
         'labels' => array(
           'name' => __( 'Document Page' ),
-          'singular_name' => __( 'Document' ),
-          'add_new'   => __( 'Add Document' ),
-          'all_items'   => __( 'All Documents' ),
-          'add_new_item' => __( 'Add New Document' ),
-          'edit_item'   => __( 'Edit Document' ),
-          'view_item'   => __( 'View Document' ),
-          'search_items'   => __( 'Search Documents' ),
-          'not_found'   => __( 'Document Not Found' ),
-          'not_found_in_trash'   => __( 'Document not found in trash' ),
+          'singular_name' => __( 'Document Page' ),
+          'add_new'   => __( 'Add Document Page' ),
+          'all_items'   => __( 'All Document Pages' ),
+          'add_new_item' => __( 'Add New Document Page' ),
+          'edit_item'   => __( 'Edit Document Page' ),
+          'view_item'   => __( 'View Document Page' ),
+          'search_items'   => __( 'Search Document Pages' ),
+          'not_found'   => __( 'Document Page Not Found' ),
+          'not_found_in_trash'   => __( 'Document Page not found in trash' ),
         ),
         'taxonomies' => array(
           'category',
@@ -242,6 +273,8 @@ class Phila_Gov_Custom_Post_Types{
         ),
         'public' => true,
         'has_archive' => true,
+        'show_in_rest' => true,
+        'rest_base' => 'documents',
         'menu_icon' => 'dashicons-media-text',
         'hierarchical' => false,
         'rewrite' => array(
@@ -281,10 +314,13 @@ class Phila_Gov_Custom_Post_Types{
         ),
         'public' => true,
         'has_archive' => true,
+        'show_in_menu'  => false,
+        'show_in_rest' => true,
+        'rest_base' => 'phila-post',
         'menu_icon' => 'dashicons-admin-post',
         'hierarchical' => false,
         'rewrite' => array(
-            'slug' => 'posts',
+            'slug' => 'phila-posts',
             'with_front' => false,
         ),
       )
@@ -315,6 +351,9 @@ class Phila_Gov_Custom_Post_Types{
         ),
         'public' => true,
         'has_archive' => true,
+        'show_in_menu'  => false,
+        'show_in_rest' => true,
+        'rest_base' => 'press-releases',
         'menu_icon' => 'dashicons-editor-justify',
         'hierarchical' => false,
         'rewrite' => array(
@@ -347,6 +386,8 @@ class Phila_Gov_Custom_Post_Types{
         'exclude_from_search' => true,
         'public' => false,
         'show_ui' => true,
+        'show_in_rest' => true,
+        'rest_base' => 'staff',
         'has_archive' => false,
         'menu_icon' => 'dashicons-id',
         'hierarchical' => false,

@@ -174,7 +174,7 @@ if ( class_exists("Phila_Gov_Service_Update_Pages" ) ){
           array(
             'name' => 'Link (optional)',
             'type' => 'heading',
-            'after' => '<p class="description" style="margin-top:0; margin-bottom:1.5em;">Use this area if the Service Update has a related web site, news article, press release, etc..</p>',
+            'after' => '<p class="description" style="margin-top:0; margin-bottom:1.5em;">Use this area if the Service Update has a related web site, post, press release, etc..</p>',
            ),
           array(
             'name'  => 'Link Text',
@@ -193,10 +193,11 @@ if ( class_exists("Phila_Gov_Service_Update_Pages" ) ){
             'size'  => '60'
           ),
           array(
-            'name'  => 'Off-site link',
+            'name'  => 'Does this link direct users away from beta.phila.gov?',
             'id'    => 'phila_off_site',
-            'type'  => 'checkbox',
-            'desc'  => 'This website is not part of beta.phila.gov',
+            'type'  => 'switch',
+            'on_label'  => 'Yes',
+            'off_label' => 'No',
           ),
         )
       )

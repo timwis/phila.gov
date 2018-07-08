@@ -7,8 +7,10 @@
  */
 ?>
 <?php
-$connect_panel = rwmb_meta('module_row_1_col_2_connect_panel');
-$connect_vars = phila_connect_panel($connect_panel);
+  $connect_panel = rwmb_meta('module_row_1_col_2_connect_panel');
+  if ( !isset( $connect_vars ) ) :
+    $connect_vars = phila_connect_panel($connect_panel);
+  endif;
 ?>
 
 <div class="large-8 columns">
@@ -52,9 +54,8 @@ $connect_vars = phila_connect_panel($connect_panel);
   <?php endif; ?>
   <?php if ( ( !phila_util_is_array_empty($connect_vars['phone']) ) || (!$connect_vars['fax'] == '' ) ) : ?>
     <tr>
-      <th scope="row">
+      <th scope="row" aria-label="phone">
         <i class="fa fa-phone fa-2x" aria-hidden="true"></i>
-        <span class="type <?php echo ( !$connect_vars['fax'] ) ? 'accessible' : '';?>">Phone: </span>
       </th>
       <td class="pvl">
         <div class="p-tel">
@@ -67,6 +68,7 @@ $connect_vars = phila_connect_panel($connect_panel);
 
           $full_phone = $area . $co_code . $subscriber_number;
           ?>
+          <span class="type <?php echo ( !$connect_vars['fax'] ) ? 'accessible' : '';?>">Phone: </span>
           <a href="tel:<?php echo preg_replace('/[^A-Za-z0-9]/', '', $full_phone); ?>" class="value"><?php echo $full_phone; ?></a>
         </div>
       <?php if ( !$connect_vars['fax'] == '') : ?>
@@ -74,6 +76,18 @@ $connect_vars = phila_connect_panel($connect_panel);
           <span class="type">Fax: </span><span class="value"><?php echo $connect_vars['fax']; ?></span>
         </div>
       <?php endif; ?>
+      </td>
+    </tr>
+  <?php endif; ?>
+  <?php if ( !phila_util_is_array_empty($connect_vars['website']) )  : ?>
+    <tr>
+      <th scope="row" aria-label="website">
+        <i class="fa fa-globe fa-2x" aria-hidden="true"></i>
+      </th>
+      <td>
+        <a href="<?php echo $connect_vars['website']['url'] ?>" class="<?php echo isset($connect_vars['website']['external']) ? 'external' : ''?>">
+          <?php echo $connect_vars['website']['text'] ?>
+        </a>
       </td>
     </tr>
   <?php endif; ?>
@@ -138,8 +152,16 @@ $connect_vars = phila_connect_panel($connect_panel);
 
   </table>
   <?php if ( !empty( $connect_vars['see_all'] ) ) : ?>
-    <?php $see_all_URL = $connect_vars['see_all']; ?>
-    <?php $see_all_content_type = 'contact information';?>
-    <?php include( locate_template( 'partials/content-see-all.php' ) ); ?>
+    <div class="row mtm">
+      <div class="columns">
+        <?php $see_all = array(
+          'URL' => $connect_vars['see_all'],
+          'content_type' => 'contact information',
+          'nice_name' => 'contact information',
+          'is_full' => true
+        ); ?>
+        <?php include( locate_template( 'partials/content-see-all.php' ) ); ?>
+      </div>
+    </div>
   <?php endif; ?>
 </div>

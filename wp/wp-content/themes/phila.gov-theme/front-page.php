@@ -68,7 +68,7 @@ get_header(); ?>
                 </a>
               </div>
               <div class="small-12 medium-6 columns">
-                <a href="/property" class="mrs mbs equal">
+                <a href="http://property.phila.gov/" class="mrs mbs equal">
                   <div class="phs pvm cta-block clearfix">
                     <div class="valign ">
                       <div class="valign-cell">
@@ -90,196 +90,103 @@ get_header(); ?>
     <!-- End Hero Content -->
     <div class="row">
       <div class="columns">
-        <h2 class="contrast">Service updates</h2>
+        <h2>Service updates</h2>
       </div>
     </div>
-    <?php $args = array( 'post_type' => 'service_updates', 'category_name' => 'homepage' ); ?>
-    <?php $service_updates_loop = new WP_Query( $args ); ?>
-    <?php include( locate_template( 'partials/content-service-updates.php' ) ); ?>
-    <?php wp_reset_query();?>
-
-    <div class="news-row row ptm">
-      <div class="columns">
-        <section>
-          <div class="row">
-            <div class="columns">
-              <h2 class="contrast"><?php printf( __( 'News' ) ) ?> </h2>
-            </div>
-          </div>
-          <div class="row equal-height">
-          <?php
-            $args = array(
-              'post_type' => array ('news_post'),
-              'posts_per_page'    => 3,
-              'meta_key'          => 'phila_show_on_home',
-              //only show if "yes" is selected
-              'meta_value'     => '1'
-            );
-            $news_query = new WP_Query( $args );
-            if ( $news_query->have_posts() ) : while ( $news_query->have_posts() ) : $news_query->the_post(); ?>
-              <div class="small-24 medium-8 columns">
-                <?php phila_get_home_news(); ?>
-              </div>
-            <?php endwhile; ?>
-            <?php else : ?>
-              <div class="alert">No recent news.</div>
-            <?php endif; ?>
-          </div>
-          <?php $see_all_URL = '/news' ?>
-          <?php $see_all_content_type = 'news'?>
-          <?php include( locate_template( 'partials/content-see-all.php' ) ); ?>
-        </section>
-      </div>
+    <?php $service_args = array( 'post_type' => 'service_updates', 'category_name' => 'homepage' ); ?>
+    <div class="mbxl">
+      <?php include( locate_template( 'partials/content-service-updates.php' ) ); ?>
     </div>
-    <!-- End News -->
 
-    <section class="neighborhood-resources">
-      <div class="row expanded ptm">
+    <?php $home_filter = array(
+      'key' => 'show_on_home',
+      'value'   => '1' ,
+      'compare' => '='
+    );?>
+    <?php include( locate_template( 'partials/posts/announcements-grid.php' ) ); ?>
+
+    <section class="the-latest mvm">
+      <div class="row">
         <div class="columns">
-          <div class="row">
-            <div class="columns">
-              <h2 class=contrast>Neighborhood resources</h2>
-            </div>
-          </div>
+          <h2>The latest news + events</h2>
         </div>
       </div>
-      <div class="row expanded resource-row">
-        <div class="row phm phl-mu pvm-mu equal-height">
-          <div class="small-12 medium-6 columns mtxl-mu mbm-mu sidewalk bdr-right nbdr-right-mu bdr-bottom-sm">
-            <a href="http://www.freelibrary.org/" class="action-panel">
-              <div class="panel equal" data-equalizer-watch="" >
-                <header class="">
-                  <div class="icon">
-                    <span><i class="fa fa-book fa-5x" aria-hidden="true"></i></span>
-                  </div>
-                  <span class="external">Free libraries</span>
-                </header>
-              </div>
-            </a>
-          </div>
-          <!-- Free Libraries -->
-          <div class="small-12 medium-6 columns mtxl-mu mbm-mu sidewalk bdr-bottom-sm">
-            <a href="http://phl.maps.arcgis.com/apps/View/index.html?appid=28b6efe281ba44efb378d0b29415b514" class="action-panel">
-              <div class="panel equal" data-equalizer-watch="" >
-                <header class="">
-                  <div class="icon">
-                    <span><i class="fa fa-tree fa-5x" aria-hidden="true"></i></span>
-                  </div>
-                  <span class="external">Parks</span>
-                </header>
-              </div>
-            </a>
-          </div>
-          <!-- Parks -->
-          <div class="small-12 medium-6 columns mtxl-mu mbm-mu sidewalk bdr-right nbdr-right-mu  bdr-bottom-sm">
-            <a href="http://www.phila.gov/parksandrecreation/findafacility/" class="action-panel">
-              <div class="panel equal" data-equalizer-watch="" >
-                <header class="">
-                  <div class="icon">
-                    <span><i class="fa fa-paint-brush fa-5x" aria-hidden="true"></i></span>
-                  </div>
-                  <span class="external">Recreation centers</span>
-                </header>
-              </div>
-            </a>
-          </div>
-          <!-- Recreation Centers -->
-          <div class="small-12 medium-6 columns mtxl-mu mbm-mu sidewalk bdr-bottom-sm">
-            <a href="https://www.phillykeyspots.org/keyspot-finder" class="action-panel">
-              <div class="panel equal" data-equalizer-watch="" >
-                <header class="">
-                  <div class="icon">
-                    <span><i class="fa fa-wifi fa-5x" aria-hidden="true"></i></span>
-                  </div>
-                  <span class="external">Free Internet access</span>
-                </header>
-              </div>
-            </a>
-          </div>
-          <!-- Free Internet Access -->
-          <div class="small-12 medium-6 columns mtm-mu mbxl-mu sidewalk bdr-right nbdr-right-mu  bdr-bottom-sm">
-            <a href="http://phl.maps.arcgis.com/apps/View/index.html?appid=a9bc69013f76464ca21ad6bb00167c90" class="action-panel">
-              <div class="panel equal" data-equalizer-watch="" >
-                <header class="">
-                  <div class="icon">
-                    <span><i class="fa fa-soccer-ball-o fa-5x" aria-hidden="true"></i></span>
-                  </div>
-                  <span class="external">Playgrounds</span>
-                </header>
-              </div>
-            </a>
-          </div>
-          <!-- Playgrounds -->
-          <div class="small-12 medium-6 columns mtm-mu mbxl-mu sidewalk bdr-bottom-sm">
-            <a href="/city-health-centers/" class="action-panel">
-              <div class="panel equal" data-equalizer-watch="" >
-                <header class="">
-                  <div class="icon">
-                    <span><i class="fa fa-heartbeat fa-5x" aria-hidden="true"></i></span>
-                  </div>
-                  <span class="">Health centers</span>
-                </header>
-              </div>
-            </a>
-          </div>
-          <!-- Health Centers -->
-          <div class="small-12 medium-6 columns mtm-mu mbxl-mu sidewalk bdr-right nbdr-right-mu">
-            <a href="http://www.phila.gov/fire/fac_and_equip/facil_firehouses.html" class="action-panel">
-              <div class="panel equal" data-equalizer-watch="" >
-                <header class="">
-                  <div class="icon">
-                    <span><i class="fa fa-fire-extinguisher fa-5x" aria-hidden="true"></i></span>
-                  </div>
-                  <span class="external">Fire stations</span>
-                </header>
-              </div>
-            </a>
-          </div>
-          <!-- Fire Stations -->
-          <div class="small-12 medium-6 columns mtm-mu mbxl-mu sidewalk">
-            <a href="https://www.phillypolice.com/districts/" class="action-panel">
-              <div class="panel equal" data-equalizer-watch="" >
-                <header class="">
-                  <div class="icon">
-                    <span><i class="fa fa-shield fa-5x" aria-hidden="true"></i></span>
-                  </div>
-                  <span class="external">Police stations</span>
-                </header>
-              </div>
-            </a>
-          </div>
-          <!-- Police Stations -->
-        </div>
+      <?php include( locate_template( 'partials/posts/featured-grid.php' ) ); ?>
+      <?php include( locate_template( 'partials/global/cta-go-to-latest.php' ) ); ?>
+    </section>
+
+    <section class="common-resources mvl">
+      <div class="grid-container grid-x">
+        <h2>Common resources</h2>
       </div>
-      <div class="feedback phm phn-mu mvs mvn-mu">
-        <div class="row expanded" data-toggle="feedback">
-          <div class="column call-to-action pas center">
-            <a href="#" class="no-link"><i class="fa fa-lightbulb-o" aria-hidden="true"></i><span class="break-before-sm"> What should we we add to the neighborhood resources section?</span>
-            <span class="break-before-sm"> Tell us</span>.</a>
-          </div>
-        </div>
-        <div class="feedback-form" data-type="feedback-form" style="display:none;">
-          <div class="row expanded">
-            <div class="medium-18 large-14 column small-centered mbm clearfix" data-type="form-wrapper" >
-              <div id="form-container"></div>
+      <div class="grid-x bg-ghost-gray pvl">
+        <div class="grid-container">
+          <div class="grid-x grid-margin-x">
+            <div class="cell medium-12">
+              <div class="card hover-fade">
+                <a href="https://<?php phila_util_echo_website_url()?>/parks-rec-finder" class="hover-fade">
+                  <?php $image = rwmb_meta('phila_v2_photo_callout_block__photo', array('size' => 'medium', 'limit' => 1), $post = '27984')[0]['url']; ?>
+                  <img src="<?php echo $image ?>" alt="">
+                  <?php wp_reset_query(); ?>
+                  <div class="card-description phl pvm">
+                    <h3>Parks & Recreation Finder</h3>
+                    <p>Use our app to search for activities, parks, rec centers, and more.</p>
+                  </div>
+                </a>
+              </div>
             </div>
-          </div>
-        </div>
-        <div class="row expanded" data-type="feedback-indicator">
-          <div class="column center">
-            <div class="arrow-wrapper">
-              <div class="arrow"></div>
+            <div class="cell medium-12 grid-x">
+              <div class="card card-fixed-height cell shrink align-self-top full hover-fade">
+                <a href="http://www.phila.gov/contracts/pages/default.aspx" class="hover-fade">
+                  <div class="grid-x">
+                    <div class="cell shrink align-self-middle pas">
+                      <i class="fa fa-copy fa-4x fa-fw"></i>
+                    </div>
+                    <div class="cell auto align-self-middle pvm">
+                      <div class="card-description phl">
+                        <h3>Contracts</h3>
+                        <p>Find, bid on, get alerts for contract opportunities with the City.</p>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              <div class="card card-fixed-height cell shrink align-self-middle full hover-fade">
+                <a href="https://beta.phila.gov/departments/department-of-licenses-and-inspections/">
+                  <div class="grid-x">
+                    <div class="cell shrink align-self-middle pas">
+                      <i class="fa fa-file-text fa-4x  fa-fw"></i>
+                    </div>
+                    <div class="cell auto align-self-middle pvm">
+                      <div class="card-description phl">
+                        <h3>Licenses, inspections & permits </h3>
+                        <p>Get a license, schedule an inspection, apply for a building permit.</p>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              <div class="card card-fixed-height cell shrink align-self-bottom full hover-fade">
+                <a href="https://visitphilly.com">
+                  <div class="grid-x">
+                    <div class="cell shrink align-self-middle pas">
+                      <i class="fa fa-users fa-4x fa-fw"></i>
+                    </div>
+                    <div class="cell auto align-self-middle pvm">
+                      <div class="card-description phl">
+                        <h3 class="external">Visit Philadelphia</h3>
+                        <p>Visitphilly.com is the official visitor site for Greater Philadelphia.</p>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              </div>
             </div>
-          </div>
-        </div>
-        <div class="row expanded" data-toggle="feedback" data-type="feedback-footer" style="display:none;">
-          <div class="column call-to-action center">
-            <div class="pas"><a href="#" class="no-link"><i class="fa fa-close" aria-hidden="true"></i> Close</a></div>
           </div>
         </div>
       </div>
     </section>
-    <!-- End Neighborhood Resources -->
+    <!-- End Common Resources -->
 
     <div class="row ptm pbxl expanded phila-redesign">
       <div class="columns">

@@ -15,82 +15,65 @@
 ?>
 <div>
 <?php
-    foreach ($page_rows as $key => $value):
-      $current_row = $page_rows[$key];?>
+  foreach ($page_rows as $key => $value):
+    $current_row = $page_rows[$key];?>
 
-      <!-- Grid Row -->
-      <?php if ( ( isset( $current_row['phila_grid_options'] ) && $current_row['phila_grid_options'] == 'phila_grid_options_full' ) && isset( $current_row['phila_full_options']['phila_full_options_select'] ) ):
+    <!-- Grid Row -->
+    <?php if ( ( isset( $current_row['phila_grid_options'] ) && $current_row['phila_grid_options'] == 'phila_grid_options_full' ) &&
+    isset( $current_row['phila_full_options']['phila_full_options_select'] ) ):
 
-          // Begin full width row
-          $current_row_option = $current_row['phila_full_options']['phila_full_options_select'];
+      // Begin full width row
+      $current_row_option = $current_row['phila_full_options']['phila_full_options_select'];
 
-          if ( $current_row_option == 'phila_blog_posts'):
-            $blog_category = isset( $current_row['phila_full_options']['phila_blog_options']['phila_category'] ) ? $current_row['phila_full_options']['phila_blog_options']['phila_category'] : ''; ?>
-            <!-- Blog Content -->
-            <div class="row mvl">
-                <?php echo do_shortcode('[recent-posts posts="3" category="' . $blog_category . '"]'); ?>
-            </div>
-            <?php $see_all_URL = '/posts/' . $blog_category ?>
-            <?php $see_all_content_type = 'posts'?>
-            <?php include( locate_template( 'partials/content-see-all.php' ) ); ?>
 
-          <?php elseif ( $current_row_option == 'phila_full_width_calendar'):
-            $cal_id = isset( $current_row['phila_full_options']['phila_full_width_calendar']['phila_full_width_calendar_id'] ) ? $current_row['phila_full_options']['phila_full_width_calendar']['phila_full_width_calendar_id'] : '';
-            $cal_url = isset( $current_row['phila_full_options']['phila_full_width_calendar']['phila_full_width_calendar_url'] ) ? $current_row['phila_full_options']['phila_full_width_calendar']['phila_full_width_calendar_url'] : ''; ?>
+      if ( $current_row_option == 'phila_blog_posts'):?>
 
-            <?php if ( !empty( $cal_id ) ):?>
-              <!-- Full Width Calendar -->
-              <section class="expanded">
-                <div class="row">
-                  <div class="columns">
-                    <h2>Events</h2>
-                  </div>
-                </div>
-                <div class="row expanded calendar-row mbm ptm">
-                  <div class="medium-centered large-16 columns">
-                    <?php echo do_shortcode('[calendar id="' . $cal_id . '"]'); ?>
-                  </div>
-                </div>
-                <?php if ( !empty( $cal_url ) ):?>
-                  <?php $see_all_URL = $cal_url; ?>
-                  <?php $see_all_content_type = 'events';?>
-                  <?php include( locate_template( 'partials/content-see-all.php' ) ); ?>
-                <?php endif; ?>
-              </section>
-            <?php endif;?>
+        <!-- Blog Content -->
+        <div class="mvl">
+          <?php $blog_cat_override = isset( $current_row['phila_full_options']['phila_get_post_cats']['phila_post_category']) ? $current_row['phila_full_options']['phila_get_post_cats']['phila_post_category'] : '';
+          ?>
+          <?php $blog_tag_override = isset( $current_row['phila_full_options']['phila_get_post_cats']['tag']) ? $current_row['phila_full_options']['phila_get_post_cats']['tag'] : '';
+          ?>
+          <?php include( locate_template( 'partials/departments/phila_full_row_blog.php' ) ); ?>
+        </div>
+        <?php elseif ( $current_row_option == 'phila_full_width_calendar'):
+          $cal_id = isset( $current_row['phila_full_options']['phila_full_width_calendar']['phila_full_width_calendar_id'] ) ? $current_row['phila_full_options']['phila_full_width_calendar']['phila_full_width_calendar_id'] : '';
+          $cal_category = isset( $current_row['phila_full_options']['phila_full_width_calendar']['phila_calendar_owner'] ) ? $current_row['phila_full_options']['phila_full_width_calendar']['phila_calendar_owner'] : ''; ?>
 
-          <?php elseif ( $current_row_option == 'phila_callout'):
-            $callout_type = isset( $current_row['phila_full_options']['phila_callout']['phila_callout_type'] ) ? $current_row['phila_full_options']['phila_callout']['phila_callout_type'] : '';
-            $callout_text = isset( $current_row['phila_full_options']['phila_callout']['phila_callout_text'] ) ? $current_row['phila_full_options']['phila_callout']['phila_callout_text'] : ''; ?>
+          <?php include( locate_template( 'partials/departments/v2/calendar.php' ) ); ?>
 
-            <?php if ( !empty( $callout_text ) ): ?>
-              <!-- Display Callout -->
-              <section class="row mvm">
-                <div class="large-24 column">
-                    <?php echo do_shortcode('[callout type="' . $callout_type . '" inline="false"]' . $callout_text . '[/callout]'); ?>
-                </div>
-              </section>
-            <?php endif;?>
+        <?php elseif ( $current_row_option == 'phila_callout'):
+          $callout_text = isset( $current_row['phila_full_options']['phila_callout']['phila_callout_text'] ) ? $current_row['phila_full_options']['phila_callout']['phila_callout_text'] : ''; ?>
 
-          <?php elseif ($current_row_option == 'phila_get_involved'): ?>
-            <?php if ( isset( $current_row['phila_full_options']['phila_call_to_action_multi']['phila_call_to_action_section'] ) ):
-              $phila_dept_homepage_cta = $current_row['phila_full_options']['phila_call_to_action_multi']['phila_call_to_action_section'];
-                include(locate_template('partials/departments/content-get-involved.php'));
-            endif; ?>
+          <?php if ( !empty( $callout_text ) ): ?>
+            <!-- Display Callout -->
+            <section class="row mvm">
+              <div class="large-24 column">
+                  <?php echo do_shortcode('[callout type="default" inline="false"]' . $callout_text . '[/callout]'); ?>
+              </div>
+            </section>
+          <?php endif;?>
 
-          <?php elseif ( $current_row_option == 'phila_full_width_press_releases'): ?>
-            <!-- Press Releases -->
-              <section class="row mvl">
-                <?php echo do_shortcode('[press-releases posts=5]');?>
-              </section>
-              <?php $see_all_URL = '/press-releases/' . $category_slug ?>
-              <?php $see_all_content_type = 'press releases'?>
-              <?php include( locate_template( 'partials/content-see-all.php' ) ); ?>
+        <?php elseif ($current_row_option == 'phila_get_involved'): ?>
+          <?php if ( isset( $current_row['phila_full_options']['phila_call_to_action_multi']['phila_call_to_action_section'] ) ):
+            $phila_dept_homepage_cta = $current_row['phila_full_options']['phila_call_to_action_multi']['phila_call_to_action_section'];
+              include(locate_template('partials/departments/content-get-involved.php'));
+          endif; ?>
+
+        <?php elseif ( $current_row_option == 'phila_full_width_press_releases'): ?>
+          <!-- Press Releases -->
+          <?php $press_cat_override = isset( $current_row['phila_full_options']['full_width_press_releases']['phila_press_release_category']) ? $current_row['phila_full_options']['full_width_press_releases']['phila_press_release_category'][0] : '';
+          ?>
+          <?php $press_tag_override = isset( $current_row['phila_full_options']['full_width_press_releases']['tag']) ? $current_row['phila_full_options']['full_width_press_releases']['tag'] : '';
+          ?>
+            <section class="row mvl">
+              <?php echo do_shortcode('[press-releases posts=5 tag="'. $press_tag_override .'" category="' . $press_cat_override .'"]');?>
+            </section>
 
           <?php elseif ($current_row_option == 'phila_resource_list'): ?>
             <?php if ( isset( $current_row['phila_full_options']['phila_call_to_action_multi']['phila_call_to_action_section'] ) ):
                 $phila_dept_homepage_cta = $current_row['phila_full_options']['phila_call_to_action_multi']['phila_call_to_action_section'];
-                include(locate_template('partials/departments/content-call-to-action-multi.php'));
+                include(locate_template('partials/departments/phila_call_to_action_multi.php'));
             endif; ?>
 
           <?php elseif ( $current_row_option == 'phila_custom_text'): ?>
@@ -109,7 +92,46 @@
               $list_items = isset( $current_row['phila_full_options']['phila_list_items'] ) ? $current_row['phila_full_options']['phila_list_items'] : '';
               include(locate_template('partials/departments/content-list-items.php'));
             ?>
+        <?php elseif ( $current_row_option == 'phila_full_cta'): ?>
+          <?php if ( isset( $current_row['phila_full_options']['phila_full_width_cta'] ) ):
+            $cta = $current_row['phila_full_options']['phila_full_width_cta'];
+
+            $link = phila_cta_full_display( $cta );
+
+           include(locate_template('partials/departments/v2/full-width-call-to-action.php')); ?>
+         <?php endif; ?>
+
+       <?php elseif ( $current_row_option == 'phila_custom_text_multi'):?>
+         <?php if ( isset( $current_row['phila_full_options']['phila_custom_text_multi_full'] ) ):
+           $custom_text = $current_row['phila_full_options']['phila_custom_text_multi_full'];
+           $multi_full_row = true;
+           ?>
+           <div class="row">
+             <?php include(locate_template('partials/departments/content-custom-text-multi.php')); ?>
+          </div>
+         <?php endif; ?>
+
+        <?php elseif ( $current_row_option == 'phila_image_list'):?>
+
+          <?php if ( isset( $current_row['phila_full_options']['phila_image_list'] ) ):
+
+            $image_list = $current_row['phila_full_options']['phila_image_list'];
+
+            $image_list_vars = phila_image_list($image_list);
+
+            ?>
+            <?php include(locate_template('partials/programs/image-list.php')); ?>
           <?php endif; ?>
+
+        <?php elseif ( $current_row_option == 'phila_registration'):?>
+          <?php if ( isset( $current_row['phila_full_options']['phila_registration'] ) ):
+
+            $registration = $current_row['phila_full_options']['phila_registration']; ?>
+
+            <?php include(locate_template('partials/global/registration.php')); ?>
+          <?php endif; ?>
+
+      <?php endif;  /*end full row */?>
 
       <?php elseif ( ( isset( $current_row['phila_grid_options'] ) && $current_row['phila_grid_options'] == 'phila_grid_options_half') && ( isset( $current_row['phila_half_options']['phila_half_col_1'] ) && isset( $current_row['phila_half_options']['phila_half_col_2'] ) ) ):
 
@@ -141,7 +163,7 @@
 
             <?php if ( $current_row_option_two['phila_half_col_2_option'] == 'phila_custom_text'):?>
                 <?php if ( isset( $current_row_option_two['phila_custom_text'] ) ):
-                  $custom_text = $current_row_option_two['phila_custom_text']; ?>
+                  $custom_text = $current_row_option_two['phila_custom_text'];?>
                   <div class="large-12 columns">
                     <?php include(locate_template('partials/departments/content-custom-text.php'));?>
                   </div>
@@ -169,17 +191,8 @@
         <section class="row mvl">
             <?php
               if ( $current_row_option_one['phila_two_thirds_col_option'] == 'phila_blog_posts'):
-                $blog_category = isset( $current_row_option_one['phila_blog_options']['phila_category'] ) ? $current_row_option_one['phila_blog_options']['phila_category'] : '';
-              ?>
-              <!-- Blog Content -->
-              <div class="large-16 columns">
-                <div class="row">
-                  <?php echo do_shortcode('[recent-posts posts="3" category="' . $blog_category . '"]'); ?>
-                </div>
-                <?php $see_all_URL = '/posts/' . $blog_category ?>
-                <?php $see_all_content_type = 'posts'?>
-                <?php include( locate_template( 'partials/content-see-all.php' ) ); ?>
-              </div>
+                $blog_cat_override = isset( $current_row['phila_two_thirds_col_option']['phila_get_post_cats']) ? $current_row['phila_two_thirds_col_option']['phila_get_post_cats'] : '';
+                include(locate_template('partials/departments/phila_full_row_blog.php'));?>
             <?php elseif ( $current_row_option_one['phila_two_thirds_col_option'] == 'phila_custom_text'):?>
                 <?php if ( isset( $current_row_option_one['phila_custom_text'] ) ):
                   $custom_text = $current_row_option_one['phila_custom_text']; ?>
@@ -198,10 +211,22 @@
 
             <?php if ( $current_row_option_two['phila_one_third_col_option'] == 'phila_connect_panel'):?>
                 <?php if ( isset( $current_row_option_two['phila_connect_panel'] ) ):
+
                   $connect_panel = $current_row_option_two['phila_connect_panel'];
+
                   $connect_vars = phila_connect_panel($connect_panel);
-                  include(locate_template('partials/departments/content-connect.php'));
+
+                  include(locate_template('partials/departments/v2/content-connect.php'));
+
                 endif; ?>
+
+            <?php elseif ( $current_row_option_two['phila_one_third_col_option'] == 'phila_custom_text'):?>
+                <?php if ( isset( $current_row_option_two['phila_custom_text'] ) ):
+                  $custom_text = $current_row_option_two['phila_custom_text']; ?>
+                  <div class="large-8 columns">
+                    <?php include(locate_template('partials/departments/content-custom-text.php'));?>
+                  </div>
+              <?php endif;?>
 
             <?php elseif ( $current_row_option_two['phila_one_third_col_option'] == 'phila_custom_feature'):?>
               <?php if ( isset( $current_row_option_two['phila_custom_feature'] ) ):

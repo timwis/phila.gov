@@ -5,13 +5,13 @@
   }
 }
 .service-update-row{
-  background: color(white);
+  background: white;
   padding-top: $spacing-extra;
 }
 
 .service-update{
   color: #444444;
-  margin-bottom: .5rem;
+  margin: 0;
 
   &.critical {
     .service-update-icon{

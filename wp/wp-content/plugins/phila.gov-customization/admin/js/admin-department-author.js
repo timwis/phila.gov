@@ -1,45 +1,57 @@
-/* only loads in the admin,
-for users who do not have the PHILA_ADMIN capability */
+/* loads for users who do not have the PHILA_ADMIN capability */
 
 jQuery(document).ready(function($){
+  if (!Array.prototype.indexOf) {
+    Array.prototype.indexOf = function(obj, start) {
+       for (var i = (start || 0), j = this.length; i < j; i++) {
+           if (this[i] === obj) { return i; }
+       }
+       return -1;
+     }
+   }
 
-  //force top category to be checked all the time, unless the user has access to mutiple categories
-
-  if( !phila_WP_User.includes('multi_department_access') ) {
-    var required_cat = $('#categorychecklist li:first-child input');
+  //Force top category to be checked all the time, unless the user has access to mutiple categories
+  if( !phila_WP_User.includes('multi_department_access') && !phila_WP_User.includes('secondary_all_departments')) {
+    var required_cat = $('#categorychecklist > li:first-child input');
     if( !required_cat.attr('checked')  ) {
       required_cat.attr('checked','checked');
     }
   }
-
-  if ( philaAllPostTypes.indexOf( typenow ) !== -1 && adminpage.indexOf( 'post' ) > -1 ) {
-  //At least one category must be selected
-  $("#publish").one('click', function () {
-
-    var categories = document.getElementsByName("post_category[]");
-
-     if(categories[0].checked==false && categories[1].checked==false && categories[2].checked==false) {
-
-      $('#categorydiv').addClass('error');
-
-      $('#categorydiv').before('<label id="title-error" class="error" for="categorydiv">Category selection is required.</label>');
-
-      return false;
-     }
-     return true;
-   });
+  //Force contributrors to add email for review
+  if ( phila_WP_User.includes('secondary_department_page_contributror') || phila_WP_User.includes('secondary_service_page_contributor') || phila_WP_User.includes('secondary_programs__initiatives_contributor') ){
+    $('#dem_notify_emails').prop('required', 'required')
   }
 
-  //hide all category and tag menu items, department authors shouldn't see those.
+  //Don't allow non-admins or editors to create new pages from a duplicated page
+  if (!phila_WP_User.includes('administrator') || !phila_WP_User.includes('editor')){
+    $('#save_as_new').css('display', 'none')
+  }
+
+
+  //If department "contributor" doesn't have access to this post type, hide the publish button, allow publishing action on document pages
+  if ( ( typenow != 'document') && adminpage.indexOf('post') > -1 ){
+    phila_WP_User.some(
+      function(v){
+        if ( v.indexOf(typenow) >= 0) {
+          if ($('#publish').val() === 'Publish' || $('#publish').val() === 'Update') {
+            $('#publish').css('display', 'none')
+          }
+        }
+      }
+    )
+  }
+
+  //Hide all category and tag menu items, department authors shouldn't see those.
   $('a[href*="edit-tags.php"]').parent().css('display', 'none');
 
   var menuIdString = $('#menu-id').text().trim();
   var allMenuIDs = menuIdString.split(' ');
   var match = document.getElementById( allMenuIDs );
 
-  //hide all menu locations
+  //Hide all menu locations
   $('.menu-theme-locations input').parent().css('display', 'none');
-  //display menu locations that match current user roles
+
+  //Display menu locations that match current user roles
   for (var i = 0; i < allMenuIDs.length ; i++) {
     var currentMenuId = document.getElementById( allMenuIDs[i] );
     $(currentMenuId).parent().css('display', 'block');
@@ -48,12 +60,12 @@ jQuery(document).ready(function($){
   var menuNameString = $('#menu-name').text().trim();
   var allMenuNames = menuNameString.split(' ');
 
-  //show menus that match current user roles
+  //Show menus that match current user roles
   for (var i = 0; i < allMenuNames.length ; i++) {
     var currentMenuName = allMenuNames[i];
     $( '.manage-menus option:contains("" + currentMenuName + "")').show();
   }
-  //add correct menu classes to 'nav menu' link
+  //Add correct menu classes to 'nav menu' link
   var currentURL = window.location.pathname;
 
   if (currentURL.indexOf('nav-menus') > -1){
@@ -69,12 +81,6 @@ jQuery(document).ready(function($){
 
   }else{
 
-    if ( ( typenow == 'news_post') && adminpage.indexOf('post') > -1 ){
-      $( '#title' ).rules( 'add', {
-        maxlength: 70
-      });
-    }
-
     if ( ( typenow == 'attachment') && adminpage.indexOf('post') > -1 ){
       $('#post').validate({
         rules: {
@@ -85,8 +91,11 @@ jQuery(document).ready(function($){
         maxlength: 225, required: true
       });
     }
+
     if ( ( typenow == 'department_page') && adminpage.indexOf('post') > -1 ){
       $('[id^=phila_block_id]').parent().parent().hide();
+      //hide short description and let users know what they can do to change it
+      $('#phila_meta_desc').after( "<i>To request a change to the short description, email <a href='mailto:oddt@phila.gov'>oddt@phila.gov</a>.</i>" )
     }
   }
 
@@ -106,4 +115,38 @@ jQuery(document).ready(function($){
       });
     }
   }
+
+  if ( ( typenow == 'programs') && adminpage.indexOf('post') > -1 ){
+    $('#phila_meta_desc').after( "<i>To request a change to the short description, email <a href='mailto:oddt@phila.gov'>oddt@phila.gov</a>.</i>" )
+  }
+
+  if ( ( typenow == 'post') && adminpage.indexOf('post') > -1 ){
+    $('#phila_template_select option').each( function () {
+      if( $(this).val() !== '' && $(this).val() !== 'post' ){
+        $(this).css('display', 'none');
+      }
+    });
+    if( phila_WP_User.includes('secondary_press_release_editor') || phila_WP_User.includes('secondary_press_release_contributor') ) {
+      $('#phila_template_select option').each( function () {
+        if( $(this).val() === 'press_release' ){
+          $(this).css('display', 'inline-block');
+        }
+      });
+      $("#phila_template_select").val('post');
+    }
+    if( phila_WP_User.includes( 'secondary_action_guide_editor' ) ) {
+      $('#phila_template_select option').each( function () {
+        if( $(this).val() === 'action_guide' ){
+          $(this).css('display', 'inline-block');
+        }
+      });
+    }
+
+  }
+  if ( ( typenow == 'department_page') && adminpage.indexOf('post') > -1 ){
+
+    $('#wp-module_row_1_col_1_module_row_1_col_1_options_phila_module_row_1_col_1_textarea-wrap').after( "<i>To request a change to 'What we do' content, email <a href='mailto:oddt@phila.gov'>oddt@phila.gov</a>.</i>" )
+
+  }
+
 });

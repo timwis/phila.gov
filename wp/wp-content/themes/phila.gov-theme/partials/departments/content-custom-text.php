@@ -13,8 +13,8 @@
     <h2 class="contrast"><?php echo( $custom_text_title ); ?></h2>
   <?php endif; ?>
   <?php if ( !empty( $custom_text_content ) ) :?>
-    <div>
-      <?php echo( $custom_text_content ); ?>
+    <div class="custom-text">
+      <?php echo do_shortcode(wpautop( $custom_text_content )); ?>
     </div>
   <?php else :?>
     <div class="placeholder">
