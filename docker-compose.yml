@@ -1,15 +1,35 @@
-version: '3.1'
+version: '3.3'
 
 services:
-
   wordpress:
-    image: wordpress:php7.1-fpm
+    depends_on:
+      - db
+    build: ./
+    # image: wordpress:4.9.7-php7.1-apache
     ports:
-      - 8080:80
+      - "8080:80"
+    volumes:
+      - ./wp:/var/www/html
+    restart: always
     environment:
-      WORDPRESS_DB_PASSWORD: example
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: wp
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: philagov
+      WORDPRESS_DEBUG: 1
 
-  mysql:
+  db:
     image: mysql:5.7
+    restart: always
+    volumes:
+      - ./db-data:/docker-entrypoint-initdb.d
     environment:
-      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: wp
+      MYSQL_ROOT_PASSWORD: philagov
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    depends_on:
+      - db
+    ports:
+      - "8081:80"

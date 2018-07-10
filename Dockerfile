@@ -1,23 +1,4 @@
-FROM ubuntu:16.04
-
-# Never prompts the user for choices on installation/configuration of packages
-ENV DEBIAN_FRONTEND noninteractive
-ENV TERM linux
-
-RUN set -ex \
-  && apt-get update -yqq \
-  && apt-get install -yqq --no-install-recommends \
-    nginx \
-    php5-cli \
-    php5-curl \
-    php5-fpm \
-    php5-gd \
-    php5-mysql
-
-# Composer
-RUN set -ex \
-  && curl -sS https://getcomposer.org/download/1.0.0-alpha10/composer.phar > /usr/local/bin/composer \
-  && chmod 755 /usr/local/bin/composer \
+FROM wordpress:4.9.7-php7.1-apache
 
 # wp cli
 RUN set -ex \
