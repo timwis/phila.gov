@@ -23,6 +23,7 @@ services:
     restart: always
     volumes:
       - ./db-data:/docker-entrypoint-initdb.d
+      - db-persistence:/var/lib/mysql
     environment:
       MYSQL_DATABASE: wp
       MYSQL_ROOT_PASSWORD: philagov
@@ -33,3 +34,6 @@ services:
       - db
     ports:
       - "8081:80"
+
+volumes:
+  db-persistence:
