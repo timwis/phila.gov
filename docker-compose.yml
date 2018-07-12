@@ -4,23 +4,28 @@ services:
   wordpress:
     depends_on:
       - db
-    build: ./
+    build: .
     # image: wordpress:4.9.7-php7.1-apache
+    command: dev
     ports:
       - "8080:80"
     volumes:
+      - /var/www/html/wp-content/themes/phila.gov-theme/node_modules
       - ./wp:/var/www/html
-    restart: always
+      - ./scripts/entrypoint.sh:/usr/local/bin/entrypoint.sh
     environment:
       WORDPRESS_DB_HOST: db:3306
       WORDPRESS_DB_NAME: wp
       WORDPRESS_DB_USER: root
       WORDPRESS_DB_PASSWORD: philagov
       WORDPRESS_DEBUG: 1
+      PHILA_PLUGINS_BUCKET: phila-wp-plugins-timwistest
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+      DOMAIN: localhost:8080
 
   db:
     image: mysql:5.7
-    restart: always
     volumes:
       - ./db-data:/docker-entrypoint-initdb.d
       - db-persistence:/var/lib/mysql
@@ -28,12 +33,12 @@ services:
       MYSQL_DATABASE: wp
       MYSQL_ROOT_PASSWORD: philagov
 
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin:latest
-    depends_on:
-      - db
-    ports:
-      - "8081:80"
+  # phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin:latest
+  #   depends_on:
+  #     - db
+  #   ports:
+  #     - "8081:80"
 
 volumes:
   db-persistence:
