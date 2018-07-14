@@ -1,10 +1,12 @@
 #!/bin/bash
-#
-# Install private plugins
 
-source /home/ubuntu/.ssh/environment
+if [ ! "$AWS_ACCESS_KEY_ID" ] || [ ! "$AWS_SECRET_ACCESS_KEY" ]; then
+  echo "AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are required to install private plugins. Skipping." >&2
+  exit
+fi
 
-_dir="$(dirname "$0")"
+echo "Installing private plugins"
+
 plugins="mb-admin-columns-1.3.0.zip
 mb-revision-1.1.1.zip
 meta-box-columns-1.2.3.zip
@@ -15,9 +17,14 @@ meta-box-tabs-1.0.3.zip
 meta-box-tooltip-1.1.1.zip
 wpfront-user-role-editor-personal-pro-2.14.1.zip"
 
-cd /home/ubuntu/app
+pushd /var/www/html/wp-content/plugins
+
 for plugin in $plugins; do
-  #wp plugin install --quiet --force --activate "$("$_dir/s3url.sh" "$PHILA_PLUGIN_BUCKET" "$plugin")" > /dev/null
-  echo "--- Installing $plugin ---"
-  wp plugin install --force --activate "$("$_dir/s3url.sh" "$PHILA_PLUGIN_BUCKET" "$plugin")"
+  echo "... $plugin"
+  s3_url="s3://$PHILA_PLUGINS_BUCKET/$plugin"
+  aws s3 cp --quiet "$s3_url" ./
+  unzip -o -q "$plugin"
+  rm "$plugin"
 done
+
+popd

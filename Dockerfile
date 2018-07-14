@@ -25,10 +25,14 @@ RUN apt-get update && \
     less \
   && pip install awscli
 
+# unzip (for private plugins)
+RUN apt-get update \
+  && apt-get install -y unzip
+
 # install
 WORKDIR /var/www/html
 COPY ./wp ./
-COPY ./scripts/entrypoint.sh /usr/local/bin/
+COPY ./scripts /usr/local/bin/
 
 ENTRYPOINT [ "entrypoint.sh" ]
 CMD [ "start" ]

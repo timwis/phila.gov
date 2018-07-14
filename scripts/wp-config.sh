@@ -1,44 +1,24 @@
 #!/bin/bash
+CMD=$1
+[ $CMD == "dev" ] && DEBUG=true || DEBUG=false
 
-echo 'Writing wp-config.php'
+echo "Writing wp-config.php"
 
-source /home/ubuntu/.ssh/environment
-cd /home/ubuntu/app/wp
+# Remove existing config if exists
+rm -f wp-config.php
 
-# Don't let any existing configs get in the way
-rm -f wp-config.php wp/wp-config.php
-
-if [ "$PHILA_TEST" ]; then
-  read -r -d '' DEBUG <<EOF
-/* Debug true on test instances */
-define( 'WP_DEBUG', true );
-define( 'WP_DEBUG_LOG', true );
-define( 'WP_DEBUG_DISPLAY', true );
-
-EOF
-fi
-
-# DOMAIN is INSTANCE_HOSTNAME unless PUBLIC_HOSTNAME is set
-DOMAIN=${PUBLIC_HOSTNAME:-"$INSTANCE_HOSTNAME"}
-
-if [ "$WP_AUTH_KEY" ]; then
-  SKIP_SALTS="--skip-salts"
-  read -r -d '' SALTS <<EOF
-define('AUTH_KEY',         '$WP_AUTH_KEY');
-define('SECURE_AUTH_KEY',  '$WP_SECURE_AUTH_KEY');
-define('LOGGED_IN_KEY',    '$WP_LOGGED_IN_KEY');
-define('NONCE_KEY',        '$WP_NONCE_KEY');
-define('AUTH_SALT',        '$WP_AUTH_SALT');
-define('SECURE_AUTH_SALT', '$WP_SECURE_AUTH_SALT');
-define('LOGGED_IN_SALT',   '$WP_LOGGED_IN_SALT');
-define('NONCE_SALT',       '$WP_NONCE_SALT');
-EOF
-fi
-
-wp core config --dbname=${DB_NAME:-'wp'} --dbuser=${DB_USER:-'root'} ${DB_PASS+"--dbpass=$DB_PASS"} ${DB_HOST+"--dbhost=$DB_HOST"} --skip-check $SKIP_SALTS --extra-php <<PHP
-$DEBUG
-
-$SALTS
+wp config create \
+  --dbhost="$WORDPRESS_DB_HOST" \
+  --dbname="$WORDPRESS_DB_NAME" \
+  --dbuser="$WORDPRESS_DB_USER" \
+  --dbpass="$WORDPRESS_DB_PASSWORD" \
+  --skip-check \
+  --allow-root \
+  --extra-php <<PHP
+/** Debug in development environment */
+define('WP_DEBUG', $DEBUG );
+define('WP_DEBUG_LOG', $DEBUG );
+define('WP_DEBUG_DISPLAY', $DEBUG );
 
 /** WP_SITEURL overrides DB to set WP core address */
 define('WP_SITEURL', 'https://$DOMAIN');
