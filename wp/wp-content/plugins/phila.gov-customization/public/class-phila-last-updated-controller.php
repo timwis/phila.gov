@@ -58,23 +58,23 @@ class Phila_Last_Updated_Controller {
 
     $data = array(
       array(
-        'link'  => get_site_url() . '/404/',
+        'link'  => $_SERVER['SERVER_NAME'] . '/404/',
         'updated_at' => ''
       ),
       array(
-        'link'  => get_site_url() . '/departments/',
+        'link'  => $_SERVER['SERVER_NAME'] . '/departments/',
         'updated_at' => ''
       ),
       array(
-        'link'  => get_site_url() . '/documents/',
+        'link'  => $_SERVER['SERVER_NAME'] . '/documents/',
         'updated_at' => ''
       ),
       array(
-        'link'  => get_site_url() . '/programs/',
+        'link'  => $_SERVER['SERVER_NAME'] . '/programs/',
         'updated_at' => ''
       ),
       array(
-        'link'  => get_site_url() . '/services/',
+        'link'  => $_SERVER['SERVER_NAME'] . '/services/',
         'updated_at' => ''
       ),
     );
@@ -123,7 +123,12 @@ class Phila_Last_Updated_Controller {
     $schema = $this->get_item_schema( $request );
 
     if (isset( $schema['properties']['link'] )) {
-      $post_data['link']  =  (string)  get_permalink($post->ID);
+
+      $link = get_permalink($post->ID);
+      $parsed_url = parse_url($link);
+
+      $post_data['link']  =  (string) $_SERVER['SERVER_NAME'] . $parsed_url['path'];
+
     }
     if (isset( $schema['properties']['updated_at'] )) {
       $post_data['updated_at']  = get_the_modified_date('Y-m-d H:i:s', $post->ID);
