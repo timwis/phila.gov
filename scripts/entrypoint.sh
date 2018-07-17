@@ -23,5 +23,4 @@ esac
 
 popd
 
-# run wordpress entrypoint with default cmd
-exec /usr/local/bin/docker-entrypoint.sh "apache2-foreground"
+exec "apache2-foreground"

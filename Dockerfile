@@ -29,9 +29,11 @@ RUN apt-get update && \
 RUN apt-get update \
   && apt-get install -y unzip
 
+# move wordpress from upstream image into correct location
+RUN cp -R /usr/src/wordpress /var/www/html/
+
 # install
-WORKDIR /var/www/html
-COPY ./wp ./
+COPY ./wp /var/www/html
 COPY ./scripts /usr/local/bin/
 
 ENTRYPOINT [ "entrypoint.sh" ]

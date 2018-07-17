@@ -5,13 +5,14 @@ services:
     depends_on:
       - db
     build: .
-    # image: wordpress:4.9.7-php7.1-apache
     command: dev
     ports:
       - "8080:80"
     volumes:
-      - ./wp:/var/www/html
+      - ./wp/wp-content/themes/phila.gov-theme:/var/www/wp-content/themes/phila.gov-theme
       - /var/www/html/wp-content/themes/phila.gov-theme/node_modules
+
+      # Temporary: only useful as volumes when working on the docker config
       - ./scripts/entrypoint.sh:/usr/local/bin/entrypoint.sh
       - ./scripts/private-plugins.sh:/usr/local/bin/private-plugins.sh
       - ./scripts/wp-config.sh:/usr/local/bin/wp-config.sh
