@@ -23,4 +23,4 @@ esac
 
 popd
 
-exec "apache2-foreground"
+exec "php-fpm"

@@ -21,10 +21,10 @@ define('WP_DEBUG_LOG', $DEBUG );
 define('WP_DEBUG_DISPLAY', $DEBUG );
 
 /** WP_SITEURL overrides DB to set WP core address */
-define('WP_SITEURL', 'https://$DOMAIN');
+define('WP_SITEURL', 'http://$DOMAIN'); # TODO: change back to https once SSL setup
 
 /** WP_HOME overrides DB to set public site address */
-define('WP_HOME', 'https://$DOMAIN');
+define('WP_HOME', 'http://$DOMAIN'); # TODO: change back to https once SSL setup
 
 /** For AWS and S3 usage */
 define('AWS_ACCESS_KEY_ID', '$AWS_ACCESS_KEY_ID');

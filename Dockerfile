@@ -1,4 +1,4 @@
-FROM php:7.2-apache
+FROM php:7.2-fpm
 
 ENV WORDPRESS_VERSION 4.9.6
 ENV WORDPRESS_SHA1 40616b40d120c97205e5852c03096115c2fca537
@@ -48,8 +48,7 @@ RUN { \
     echo 'opcache.revalidate_freq=2'; \
     echo 'opcache.fast_shutdown=1'; \
     echo 'opcache.enable_cli=1'; \
-  } > ${php_opcache} \
-  && a2enmod rewrite expires
+  } > ${php_opcache}
 
 # install wordpress (upstream image puts it in wrong location)
 RUN curl -o wordpress.tar.gz -fSL "https://wordpress.org/wordpress-${WORDPRESS_VERSION}.tar.gz" \

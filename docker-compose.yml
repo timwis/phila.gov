@@ -6,11 +6,10 @@ services:
       - db
     build: .
     command: dev
-    ports:
-      - "8080:80"
     volumes:
       - ./wp/wp-content/themes/phila.gov-theme:/var/www/html/wp-content/themes/phila.gov-theme
       - /var/www/html/wp-content/themes/phila.gov-theme/node_modules
+      - app:/var/www/html
 
       # Temporary: only useful as volumes when working on the docker config
       - ./scripts/entrypoint.sh:/usr/local/bin/entrypoint.sh
@@ -27,6 +26,17 @@ services:
       AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
       AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
       DOMAIN: localhost:8080
+
+  nginx:
+    depends_on:
+      - wordpress
+    image: nginx:latest
+    ports:
+      - "8080:80"
+    volumes:
+      # - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx:/etc/nginx
+      - app:/var/www/html
 
   db:
     image: mysql:5.7
@@ -46,3 +56,4 @@ services:
 
 volumes:
   db-persistence:
+  app:
