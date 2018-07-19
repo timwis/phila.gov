@@ -27,8 +27,8 @@ define('WP_SITEURL', 'https://$DOMAIN');
 define('WP_HOME', 'https://$DOMAIN');
 
 /** For AWS and S3 usage */
-define('AWS_ACCESS_KEY_ID', '$AWS_ID');
-define('AWS_SECRET_ACCESS_KEY', '$AWS_SECRET');
+define('AWS_ACCESS_KEY_ID', '$AWS_ACCESS_KEY_ID');
+define('AWS_SECRET_ACCESS_KEY', '$AWS_SECRET_ACCESS_KEY');
 
 define( 'WPOS3_SETTINGS', serialize( array(
   'bucket' => '$PHILA_MEDIA_BUCKET',

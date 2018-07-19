@@ -9,7 +9,7 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ./wp/wp-content/themes/phila.gov-theme:/var/www/wp-content/themes/phila.gov-theme
+      - ./wp/wp-content/themes/phila.gov-theme:/var/www/html/wp-content/themes/phila.gov-theme
       - /var/www/html/wp-content/themes/phila.gov-theme/node_modules
 
       # Temporary: only useful as volumes when working on the docker config
@@ -23,6 +23,7 @@ services:
       WORDPRESS_DB_PASSWORD: philagov
       WORDPRESS_DEBUG: 1
       PHILA_PLUGINS_BUCKET: phila-wp-plugins-timwistest
+      PHILA_MEDIA_BUCKET: phila-media-sync
       AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
       AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
       DOMAIN: localhost:8080
