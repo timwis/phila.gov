@@ -7,20 +7,15 @@ services:
     build: .
     command: dev
     volumes:
+      - ./scripts:/scripts
       - ./wp/wp-content/themes/phila.gov-theme:/var/www/html/wp-content/themes/phila.gov-theme
       - /var/www/html/wp-content/themes/phila.gov-theme/node_modules
       - app:/var/www/html
-
-      # Temporary: only useful as volumes when working on the docker config
-      - ./scripts/entrypoint.sh:/usr/local/bin/entrypoint.sh
-      - ./scripts/private-plugins.sh:/usr/local/bin/private-plugins.sh
-      - ./scripts/wp-config.sh:/usr/local/bin/wp-config.sh
     environment:
       WORDPRESS_DB_HOST: db:3306
       WORDPRESS_DB_NAME: wp
       WORDPRESS_DB_USER: root
       WORDPRESS_DB_PASSWORD: philagov
-      WORDPRESS_DEBUG: 1
       PHILA_PLUGINS_BUCKET: phila-wp-plugins-timwistest
       PHILA_MEDIA_BUCKET: phila-media-sync
       AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
@@ -34,7 +29,6 @@ services:
     ports:
       - "8080:80"
     volumes:
-      # - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ./nginx:/etc/nginx
       - app:/var/www/html
 

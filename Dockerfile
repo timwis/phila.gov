@@ -60,7 +60,7 @@ RUN curl -o wordpress.tar.gz -fSL "https://wordpress.org/wordpress-${WORDPRESS_V
 
 # install
 COPY ./wp /var/www/html/
-COPY ./scripts/* /usr/local/bin/
+COPY ./scripts /scripts
 
-ENTRYPOINT [ "entrypoint.sh" ]
+ENTRYPOINT [ "/scripts/entrypoint.sh" ]
 CMD [ "start" ]
