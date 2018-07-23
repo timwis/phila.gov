@@ -2,7 +2,7 @@
 
 if [ ! "$AWS_ACCESS_KEY_ID" ] || [ ! "$AWS_SECRET_ACCESS_KEY" ]; then
   echo "AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are required to install private plugins. Skipping." >&2
-  exit
+  return
 fi
 
 echo "Installing private plugins"

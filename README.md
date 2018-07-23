@@ -11,7 +11,7 @@ The phila.gov site is WordPress running behind Nginx on an AWS instance. The ent
 2. Clone this repository
 3. Download a recent `.sql` file database dump into the `db-data` directory
 4. [Generate an SSL certificate](#generate-an-ssl-certificate) locally into the `ssl` directory
-4. Run `docker-compose up` and browse to `http://localhost:8080`
+4. Run `docker-compose up` and browse to `https://localhost:8080`
 
 If you'd like to have private plugins installed, set the environment variables
 `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` before you run `up`. One way
