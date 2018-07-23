@@ -6,11 +6,16 @@ services:
       - db
     build: .
     command: dev
+    ports:
+      - "8080:443"
     volumes:
-      - ./scripts:/scripts
       - ./wp/wp-content/themes/phila.gov-theme:/var/www/html/wp-content/themes/phila.gov-theme
       - /var/www/html/wp-content/themes/phila.gov-theme/node_modules
-      - app:/var/www/html
+
+      # Useful while developing the docker environment
+      - ./scripts:/scripts
+      - ./nginx:/etc/nginx
+      - ./supervisor.conf:/etc/supervisor/conf.d/supervisor.conf
     environment:
       WORDPRESS_DB_HOST: db:3306
       WORDPRESS_DB_NAME: wp
@@ -22,19 +27,6 @@ services:
       AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
       DOMAIN: localhost:8080
 
-  nginx:
-    depends_on:
-      - wordpress
-    image: nginx:latest
-    ports:
-      - "8080:443"
-    volumes:
-      - ./nginx:/etc/nginx
-      - ./ssl:/etc/ssl
-      - app:/var/www/html
-    environment:
-      DOMAIN: localhost:8080
-
   db:
     image: mysql:5.7
     volumes:
@@ -43,13 +35,6 @@ services:
     environment:
       MYSQL_DATABASE: wp
       MYSQL_ROOT_PASSWORD: philagov
-
-  # phpmyadmin:
-  #   image: phpmyadmin/phpmyadmin:latest
-  #   depends_on:
-  #     - db
-  #   ports:
-  #     - "8081:80"
 
 volumes:
   db-persistence:

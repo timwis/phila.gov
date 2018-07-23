@@ -58,9 +58,28 @@ RUN apt-get update && \
 RUN apt-get update \
   && apt-get install -y unzip
 
+# nginx
+ENV NGINX_VERSION 1.15.1-1~stretch
+ENV NGINX_GPGKEY 573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62
+RUN echo "deb https://nginx.org/packages/mainline/debian/ stretch nginx" >> /etc/apt/sources.list.d/nginx.list \
+  && APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ${NGINX_GPGKEY} \
+  && apt-get update \
+  && apt-get install -y nginx=${NGINX_VERSION}
+
+# supervisor
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends --no-install-suggests supervisor
+
+# forward request and error logs to docker log collector
+RUN ln -sf /dev/stdout /var/log/nginx/access.log \
+  && ln -sf /dev/stderr /var/log/nginx/error.log \
+  && ln -sf /dev/stderr /var/log/php7.0-fpm.log
+
 # install
 COPY ./wp /var/www/html/
 COPY ./scripts /scripts
+COPY ./nginx /etc/nginx
+COPY supervisor.conf /etc/supervisor/conf.d/supervisor.conf
 
 ENTRYPOINT [ "/scripts/entrypoint.sh" ]
 CMD [ "start" ]

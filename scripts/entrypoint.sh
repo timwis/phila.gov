@@ -4,6 +4,7 @@ _dir="$(dirname "$0")"
 
 source "$_dir/wp-config.sh" "$CMD"
 source "$_dir/private-plugins.sh" "$CMD"
+source "$_dir/gen-cert.sh" "$CMD"
 
 # Install node dependencies
 pushd /var/www/html/wp-content/themes/phila.gov-theme
@@ -24,4 +25,4 @@ esac
 
 popd
 
-exec "php-fpm"
+/usr/bin/supervisord
