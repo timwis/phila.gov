@@ -11,6 +11,7 @@ services:
     volumes:
       - ./wp/wp-content/themes/phila.gov-theme:/var/www/html/wp-content/themes/phila.gov-theme
       - /var/www/html/wp-content/themes/phila.gov-theme/node_modules
+      - ssl-cert-persistence:/etc/ssl
 
       # Useful while developing the docker environment
       - ./scripts:/scripts
@@ -38,4 +39,4 @@ services:
 
 volumes:
   db-persistence:
-  app:
+  ssl-cert-persistence:
