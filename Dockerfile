@@ -4,6 +4,7 @@ ENV WORDPRESS_VERSION 4.9.6
 ENV WORDPRESS_SHA1 40616b40d120c97205e5852c03096115c2fca537
 
 ENV php_opcache /usr/local/etc/php/conf.d/opcache-recommended.ini
+ENV fpm_conf /usr/local/etc/php-fpm.d/www.conf
 
 # php extensions
 RUN apt-get update \
@@ -74,6 +75,17 @@ RUN apt-get update \
 RUN ln -sf /dev/stdout /var/log/nginx/access.log \
   && ln -sf /dev/stderr /var/log/nginx/error.log \
   && ln -sf /dev/stderr /var/log/php7.0-fpm.log
+
+# php-fpm settings
+ENV fpm_conf_docker /usr/local/etc/php-fpm.d/zz-docker.conf
+RUN sed -i \
+  -e "s/listen = 127.0.0.1:9000/listen = \/var\/run\/php-fpm.sock/g" \
+  -e "s/;listen.owner = www-data/listen.owner = www-data/g" \
+  -e "s/;listen.group = www-data/listen.group = www-data/g" \
+  -e "s/;listen.mode = 0660/listen.mode = 0660/g" \
+  ${fpm_conf} \
+# undo the oddly-placed zz-docker.conf setting in upstream image
+&& sed -i -e "s/listen = 9000/;listen = 9000/g" ${fpm_conf_docker}
 
 # install
 COPY ./wp /var/www/html/
